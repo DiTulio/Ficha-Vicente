@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-</head>
-<body>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
     <style>
         :root {
             color-scheme: dark;
@@ -24,7 +30,7 @@
             color: var(--tx);
             font-family: 'Archivo', system-ui, sans-serif
         }
-    
+
         body::before {
             content: "";
             position: fixed;
@@ -34,26 +40,26 @@
             pointer-events: none;
             animation: glow 5s ease-in-out infinite
         }
-    
+
         @keyframes glow {
             50% {
                 opacity: .6
-                }
+            }
         }
-    
+
         .mono {
             font-family: 'IBM Plex Mono', monospace;
             letter-spacing: .14em;
             text-transform: uppercase;
             font-size: .72rem
         }
-    
+
         .big {
             font-weight: 900;
             letter-spacing: -.02em;
             line-height: .95
         }
-    
+
         .tile {
             border: 1px solid var(--ln);
             background: var(--pn);
@@ -61,13 +67,13 @@
             text-align: left;
             transition: border-color .2s, background .2s
         }
-    
+
         button.tile:hover,
         .hov:hover {
             border-color: var(--em);
             background: #1a120d
         }
-    
+
         .bx {
             border: 1px solid var(--ln);
             background: transparent;
@@ -78,18 +84,18 @@
             cursor: pointer;
             transition: all .15s
         }
-    
+
         .bx:hover {
             border-color: var(--em);
             color: var(--gd)
         }
-    
-            .bx.on {
+
+        .bx.on {
             background: #2b1508;
             border-color: var(--em);
             color: var(--gd)
         }
-    
+
         .in {
             background: transparent;
             border: 0;
@@ -100,22 +106,22 @@
             padding: 4px 2px;
             font: inherit
         }
-    
+
         .in:focus {
             border-color: var(--em)
         }
-    
+
         textarea.in {
             border: 1px solid var(--ln);
             padding: 8px;
             min-height: 110px;
             resize: vertical
         }
-    
+
         select.in {
             background: var(--pn)
         }
-    
+
         .row {
             display: flex;
             align-items: baseline;
@@ -123,17 +129,17 @@
             padding: 5px 0;
             cursor: pointer
         }
-    
+
         .row i {
             flex: 1;
             border-bottom: 1px dotted var(--ln);
-             transform: translateY(-3px)
-            }
-    
+            transform: translateY(-3px)
+        }
+
         .row:hover b {
             color: var(--gd)
         }
-    
+
         .nav a {
             display: flex;
             gap: 14px;
@@ -143,53 +149,53 @@
             border-left: 2px solid transparent;
             transition: all .15s
         }
-    
+
         .nav a:hover {
             color: var(--tx)
         }
-    
+
         .nav a.on {
             color: var(--gd);
             background: #15100c;
             border-left-color: var(--em)
         }
-    
+
         .pop {
             animation: pop .35s cubic-bezier(.2, 1.4, .4, 1)
         }
-    
+
         @keyframes pop {
             from {
                 transform: translateY(10px) scale(.9);
                 opacity: 0
             }
         }
-    
+
         .fade {
             animation: fade .35s ease
         }
-    
+
         @keyframes fade {
             from {
                 opacity: 0;
                 transform: translateY(6px)
             }
         }
-    
+
         .flame {
             background: linear-gradient(180deg, #fff0c0, var(--gd) 40%, var(--em));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent
         }
-    
+
         :focus-visible {
             outline: 2px solid var(--gd);
             outline-offset: 2px
         }
-    
+
         @media (prefers-reduced-motion:reduce) {
-    
+
             *,
             body::before {
                 animation: none !important;
@@ -197,5 +203,274 @@
             }
         }
     </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script>
+        const { useState, useEffect, useRef } = React;
+        const API = '/api/ficha'; const h = htm.bind(React.createElement);
+        const AT = [['for', 'FOR', 'Força'], ['des', 'DES', 'Destreza'], ['con', 'CON', 'Constituição'], ['int', 'INT', 'Inteligência'], ['sab', 'SAB', 'Sabedoria'], ['pre', 'PRE', 'Presença']];
+        const SK = [['Acrobacia', 'des'], ['Atletismo', 'for'], ['Enganação', 'pre'], ['Feitiçaria', 'int'], ['Furtividade', 'des'], ['História', 'int'], ['Intimidação', 'pre'], ['Intuição', 'sab'], ['Investigação', 'int'], ['Luta', 'for'], ['Medicina', 'sab'], ['Ocultismo', 'sab'], ['Percepção', 'sab'], ['Performance', 'pre'], ['Persuasão', 'pre'], ['Pontaria', 'des'], ['Prestidigitação', 'des'], ['Sobrevivência', 'sab'], ['Tecnologia', 'int'], ['Teologia', 'int'], ['Direção', 'sab'], ['Ofício 1', 'int'], ['Ofício 2', 'int'], ['Ofício 3', 'int']];
+        const RS = [['Astúcia', 'int'], ['Fortitude', 'con'], ['Integridade', 'con'], ['Reflexos', 'des'], ['Vontade', 'sab']];
+        const CUSTO = [0, 2, 5, 8, 12, 20];
+        const FUND = [['Feitiço Cruel', 'Ao usar Feitiço com teste de resistência: 1 PE = +2 na CD, ou 2 PE = +4.'], ['Feitiço Cuidadoso', 'Feitiço em área: gaste PE igual ao seu mod. de INT/SAB para poupar o dobro de criaturas.'], ['Feitiço Distante', '2 PE dobram o alcance (corpo a corpo passa a 9 m).'], ['Feitiço Duplicado', '1x por rodada, Feitiço de dano em 1 alvo ganha um 2º alvo por 2x o nível do Feitiço em PE.'], ['Feitiço Expansivo', 'Feitiço em área: 3 PE aumentam a área em 1,5x.'], ['Feitiço Potente', 'Feitiço de dano: 3 PE para rerrolar dados de dano iguais ao mod. de INT/SAB e ficar com os melhores.'], ['Feitiço Preciso', 'Feitiço com ataque: 1 PE = +2 no acerto, ou 2 PE = +4.'], ['Feitiço Rápido', 'Nível 6. 1x por rodada, reduz em uma a ação do Feitiço pagando 2x o nível do Feitiço em PE.']];
+        const MARCO = { 1: 'Domínio dos Fundamentos (2 mudanças) e Conjuração Aprimorada. Gojo: +1 Feitiço.', 4: '+2 atributos. Adiantar a Evolução: Feitiços nível 2.', 5: 'BT +3. Gojo: +1 Feitiço.', 7: 'Feitiços nível 3.', 8: '+2 atributos.', 9: 'BT +4. Teste de Resistência Mestre.', 10: 'Foco Amaldiçoado. Mestre em uma perícia. +1 Feitiço (geral e Gojo).', 11: 'Feitiços nível 4.', 12: '+2 atributos. 3ª mudança de Fundamento.', 13: 'BT +5.', 15: 'Feitiços nível 5. Gojo: +1 Feitiço.', 16: '+2 atributos.', 17: 'BT +6.', 20: '+2 atributos. O Honrado. +1 Feitiço (geral e Gojo).' };
+        const nF = n => n < 1 ? 0 : 3 + (n - 1) + [5, 10, 15, 20].filter(x => n >= x).length + [10, 20].filter(x => n >= x).length;
+        const REP = ['Nova Habilidade', 'Elevar Aptidão'];
+        const FEAT = { 1: [['Domínio dos Fundamentos', 'Escolha 2 Mudanças de Fundamento (a 3ª chega no nível 12).'], ['Conjuração Aprimorada', 'Feitiço de dano soma um bônus que cresce com o nível do Feitiço, e você ganha Feitiço novo em todo nível.'], ['Potencial Lendário (clã Gojo)', '+1 PE em todo nível par e +1 Feitiço nos níveis 1, 5, 10, 15 e 20.'], ['Herança do clã Gojo', 'O livro lista Seis Olhos e Ilimitado como heranças do clã. Combine com o mestre como isso convive com a sua técnica.']], 4: [['Adiantar a Evolução', 'Feitiços nível 2 no nível 4, nível 3 no 7, nível 4 no 11 e nível 5 no 15.']], 9: [['Teste de Resistência Mestre', 'Treinado em um segundo TR e mestre no TR da especialização (use o botão ○ ● ◆ nos testes).']], 10: [['Foco Amaldiçoado', 'Escolha Destruição, Economia ou Refino (seletor abaixo).'], ['Perícia mestre', 'Torne-se mestre em uma perícia à sua escolha (botão ○ ● ◆).']], 20: [['O Honrado', 'Feitiços de nível 1 a 3 custam metade; CD e ataque de Feitiços e Aptidões +5.']] };
+        const ABIL = [
+            ['Abastecido pelo Sangue', 2, 'Reação: quando um inimigo morre a 12 m, recupera PE igual ao mod. INT/SAB (1x por descanso longo; 2x no nível 8, 3x no 16).'],
+            ['Conhecimento Aplicado', 2, 'Em TR contra Feitiço, gaste PE (até metade do BT): +2 no TR por ponto.'],
+            ['Conjuração Defensiva', 2, 'Ao usar Feitiço, 2 PE dão bônus em Defesa e RD igual ao nível do Feitiço até seu próximo turno.'],
+            ['Economia de Energia', 2, 'Reserva de 1d4 (descanso curto) ou 1d6 (longo), +1 dado a cada 5 níveis. Ação comum soma a reserva ao PE atual.'],
+            ['Explosão Encadeada', 2, 'Ao rolar dano máximo em um dado de Feitiço de dano, role mais um dado igual (uma vez por dado).'],
+            ['Finta Amaldiçoada', 2, 'Fintar usa o atributo-chave no lugar de Presença; Desprevenido vale para sua próxima conjuração.'],
+            ['Mente Plácida', 2, 'Teste de concentração: 1 PE dá +3 ou 2 PE dão +5, e a CD cai pelo mod. INT/SAB.'],
+            ['Nova Habilidade', 2, 'Crie 2 novos Feitiços ou 3 variações de liberação. Pode ser escolhida várias vezes.'],
+            ['Perturbação Amaldiçoada', 2, 'Ação comum, 2 PE: alvo a 9 m faz TR de Vontade; falhou, sofre prejuízo em rolagens igual ao mod. INT/SAB (metade se passar), por BT rolagens.'],
+            ['Reação Rápida', 2, 'Soma o mod. INT/SAB na Iniciativa (já aplicado na ficha).'],
+            ['Reforço Amaldiçoado', 2, 'CD de Especialização e Amaldiçoada +2 (+3 no nível 10, +4 no 20). Já aplicado na ficha.'],
+            ['Sobrecarregar', 2, 'Feitiço com TR: gaste PE (até o BT) para aumentar a CD em 1 por ponto.'],
+            ['Técnicas de Combate', 2, 'Treinado em 2 armas e usa INT/SAB nos ataques e no dano com elas.'],
+            ['Zelo Recompensador', 2, 'Passar em TR contra Feitiço dá 1 PE temporário (2 a partir do nível 14).'],
+            ['Até a Última Gota', 4, '1x por descanso longo, com menos da metade do PE: ação comum recupera 1d4 + mod. INT/SAB PE (+1 dado a cada 5 níveis), com 1 ponto de exaustão.'],
+            ['Ciclagem Maldita', 4, 'Feitiço de dano diferente do último causa dados extras iguais à metade do BT.'],
+            ['Determinação Energizada', 4, 'Em TR de Astúcia ou Vontade, 1 PE dá vantagem (+1 PE por teste extra na rodada).'],
+            ['Energia Focalizada', 4, 'Escolha um TR: soma metade do mod. SAB/INT nas rolagens dele.'],
+            ['Energia Inacabável', 4, 'PE máximo aumenta em metade do nível (já aplicado na ficha).'],
+            ['Epifania Amaldiçoada', 4, 'Aprende uma Aptidão Amaldiçoada (outra no nível 12).'],
+            ['Explosão Defensiva', 4, 'Reação ao ser atingido corpo a corpo: gaste até BT PE; cada um reduz 5 de dano e empurra 3 m. Pré-requisito: aptidão Cobrir-se.'],
+            ['Feitiço Favorito', 4, 'Um Feitiço ganha uma Melhoria de Ritual permanente.'],
+            ['Feitiços Refinados', 4, 'Soma metade do BT nas CDs de Feitiços e Aptidões (já aplicado).'],
+            ['Movimentos Imprevisíveis', 4, 'Soma o mod. INT/SAB na Defesa, limitado pelo nível (já aplicado).'],
+            ['Naturalidade com Rituais', 4, 'Usa INT no lugar de DES em Prestidigitação para rituais. Pré-requisito: treinado em Prestidigitação.'],
+            ['Preparação de Técnicas', 4, 'Prepara 2 Feitiços por descanso longo para conjurar pela metade do custo na primeira vez (nível 1; sobe com o nível).'],
+            ['Olhar Preciso', 4, '+2 em ataques de Feitiços e aptidões, +1 a cada 4 níveis (já aplicado).'],
+            ['Sacrifício pela Energia', 4, 'Cause 6 de dano a si para recuperar 2 PE. A vida perdida só volta após o descanso.'],
+            ['Versatilidade em Fundamentos', 4, 'No descanso curto, troque Mudanças de Fundamento (limite: metade do BT; BT no descanso longo).'],
+            ['Bastião Interior', 6, 'Vantagem contra amedrontado, desorientado e enfeitiçado. Pré-requisito: treinado em Vontade.'],
+            ['Combate Amaldiçoado', 6, 'Armas treinadas via Técnicas de Combate causam dano extra igual ao BT; 2 PE sobem o dano da arma um nível. Pré-requisito: Técnicas de Combate.'],
+            ['Correção', 6, '1x por rodada, evita perder a concentração pagando PE igual ao nível do Feitiço.'],
+            ['Dominância em Feitiço', 6, 'O custo de um Feitiço à escolha cai em metade do nível dele (arredondado para cima).'],
+            ['Elevar Aptidão', 6, '+1 em um Nível de Aptidão (pode pegar BT vezes).'],
+            ['Especialização', 6, 'Torna-se mestre em 3 perícias em que seja treinado.'],
+            ['Incapaz de Falhar', 6, 'Em rolagem de aptidão (exceto Domínio), 2 PE somam o mod. INT/SAB (1x por aptidão na rodada).'],
+            ['Mente Repartida', 6, 'Mantém concentração em duas fontes ao mesmo tempo.'],
+            ['Nível Perfeito', 6, 'Feitiços de um nível à escolha ganham +2 na CD (outro nível nos níveis 12 e 18).'],
+            ['Passo Rápido', 6, 'Reação: quando um inimigo entra no corpo a corpo, afaste-se metade do movimento sem ataque de oportunidade.'],
+            ['Potência Concentrada', 6, '1x por rodada, ação de movimento: seu próximo Feitiço de alvo único causa +5 x nível do Feitiço.'],
+            ['Ritualista', 6, '+2 em Conjuração em Ritual e uma melhoria extra (metade do BT vezes por descanso longo).'],
+            ['Expansão dos Fundamentos', 8, 'Aprende mais uma Mudança de Fundamento (outra no nível 12).'],
+            ['Físico Amaldiçoado Defensivo', 8, 'Cobrir-se pode gastar +2 PE (+1 com Cobertura Avançada). Pré-requisito: Cobrir-se.'],
+            ['Imbuir com Técnica', 8, 'Ação bônus, +2 PE: imbui um Feitiço de dano em arma treinada; se acertar, causa o efeito. Pré-requisito: Combate Amaldiçoado.'],
+            ['Liberações Expandidas', 8, '+1 Liberação Máxima (mais uma nos níveis 12 e 16).'],
+            ['Mira Aperfeiçoada', 8, 'Usa Mirar em ataque amaldiçoado e recebe Técnica Precisa (ou +1 nela). Pré-requisito: Olhar Preciso.'],
+            ['Primeiro Disparo', 8, 'Na iniciativa, usa habilidade de ação bônus ou livre. Pré-requisito: treinado em Reflexos.'],
+            ['Revestimento Constante', 8, 'RD contra todos os tipos (menos alma) igual ao BT. Pré-requisito: Cobrir-se.'],
+            ['Sustentação Avançada', 8, 'Mantém um Feitiço sustentado a mais e ativa um no início do combate.'],
+            ['Destruição Ampla', 10, 'Feitiço em área causa +5 de dano por criatura além da primeira.'],
+            ['Destruição Focada', 10, 'Feitiço de alvo único ignora RD igual ao mod. INT/SAB e ganha dados extras (metade do BT).'],
+            ['Economia de Energia Avançada', 10, 'Reserva vira d6 (curto) e d8 (longo); somar ao PE vira ação bônus. Pré-requisito: Economia de Energia.'],
+            ['Sentidos Aguçados', 10, 'Atenção e Percepção + metade do mod. INT/SAB. Pré-requisito: mestre em Percepção.'],
+            ['Esgrimista Jujutsu', 12, 'Com Combate Amaldiçoado, usa também um Feitiço Auxiliar de ação bônus em si. Pré-requisito: Combate Amaldiçoado.'],
+            ['Expansão Maestral', 12, 'Expande domínio com uma mão livre, sem ataque de oportunidade. Pré-requisito: Expansão de Domínio Completa.'],
+            ['Explosão Máxima', 12, 'Cada resultado máximo, além do dado extra, soma +4 ao dano. Pré-requisito: Explosão Encadeada.'],
+            ['Mestre das Aptidões', 12, 'No início da rodada, recebe PE temporários (metade do BT) só para aptidões.'],
+            ['Versatilidade Ampliada', 12, 'Feitiços ganham 1 variação de liberação; um deles ganha variação por nível de acesso.'],
+            ['Manipulação Perfeita', 16, 'BT Feitiços têm o custo reduzido pela metade. Pré-requisito: Dominância em Feitiço.'],
+            ['Sustentação Mestre', 16, 'Mantém 3 Feitiços sustentados e o custo de sustentar cai 1. Pré-requisito: Sustentação Avançada.']];
+        const D = {
+            nome: 'Vicente Orleans e Bragança', tecnica: 'Soberania das Chamas', lvl: 1, inc: {}, hab: {}, aptS: {}, foco: '', base: { for: 10, des: 10, con: 10, int: 10, sab: 10, pre: 10 }, clan: 'int', chave: 'int', tec: 'int', pvL: 0, peL: 0, defO: 0,
+            tr: { 'Feitiçaria': 1, 'Ocultismo': 1, 'Percepção': 1, 'Intuição': 1, 'Vontade': 1 }, ma: {}, fund: ['Feitiço Preciso', 'Feitiço Potente'],
+            tdesc: '', fe: [{ n: 'Feitiço 1', nv: 0, dano: '', desc: '' }, { n: 'Feitiço 2', nv: 1, dano: '', desc: '' }, { n: 'Feitiço 3 (Gojo)', nv: 1, dano: '', desc: '' }], apt: '', lore: '', notas: ''
+        };
+        const rnd = n => 1 + Math.floor(Math.random() * n);
+        const sg = n => (n >= 0 ? '+' : '') + n;
+        const mod = v => Math.floor((v - 10) / 2);
+
+        function App() {
+            const [s, setS] = useState(() => { try { return { ...D, ...JSON.parse(localStorage.getItem('vob2') || '{}') } } catch (e) { return D } });
+            const [gained, setGained] = useState(null);
+            const [pg, setPg] = useState(0), [tab, setTab] = useState('Rolador'), [adv, setAdv] = useState(null), [log, setLog] = useState([]);
+            const [die, setDie] = useState(20), [qty, setQty] = useState(1), [dm, setDm] = useState(0);
+            const [pw, setPw] = useState(() => { try { return localStorage.getItem('vob-pw') || '' } catch (e) { return '' } });
+            const [sync, setSync] = useState('local'); const loaded = useRef(false), ver = useRef(null), pwRef = useRef(pw); pwRef.current = pw;
+            useEffect(() => {
+                const pull = async first => { try { const r = await fetch(API); if (!r.ok) throw 0; const j = await r.json(); if (j && j.data && j.updated_at !== ver.current && (first || !pwRef.current)) { ver.current = j.updated_at; setS({ ...D, ...j.data }) } loaded.current = true; setSync(pwRef.current ? 'salvo' : 'leitura') } catch (e) { loaded.current = true; setSync('local') } };
+                pull(true); const t = setInterval(() => { if (!pwRef.current) pull(false) }, 15000); return () => clearInterval(t)
+            }, []);
+            useEffect(() => {
+                try { localStorage.setItem('vob2', JSON.stringify(s)) } catch (e) { }
+                if (!loaded.current || !pw || sync === 'local' || sync === 'leitura') return;
+                setSync('salvando'); const t = setTimeout(async () => {
+                    try {
+                        const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-edit-password': pw }, body: JSON.stringify({ data: s }) });
+                        if (r.status === 401) { setPw(''); try { localStorage.removeItem('vob-pw') } catch (e) { } setSync('senha'); return } if (!r.ok) throw 0; const j = await r.json(); ver.current = j.updated_at; setSync('salvo')
+                    } catch (e) { setSync('erro') }
+                }, 1200); return () => clearTimeout(t)
+            }, [s]);
+            const login = () => { if (pw) { setPw(''); try { localStorage.removeItem('vob-pw') } catch (e) { } setSync('leitura'); return } const p = prompt('Senha de edição:'); if (!p) return; setPw(p); try { localStorage.setItem('vob-pw', p) } catch (e) { } setSync('salvo'); setS(x => ({ ...x })) };
+            const SYN = { local: 'só neste aparelho', leitura: 'somente leitura', salvando: 'salvando…', salvo: 'salvo na nuvem', erro: 'erro ao salvar', senha: 'senha incorreta' };
+            const set = (k, v) => setS(p => ({ ...p, [k]: v }));
+            const A = {}; AT.forEach(([k]) => A[k] = (+s.base[k] || 0) + (k === s.clan ? 2 : (k === 'int' || k === 'sab') ? 1 : 0) + (+(s.inc || {})[k] || 0));
+            const M = {}; AT.forEach(([k]) => M[k] = mod(A[k]));
+            const L = s.lvl, bt = 2 + [5, 9, 13, 17].filter(x => L >= x).length, half = Math.floor(L / 2);
+            const hb = s.hab || {}, ap = s.aptS || {}, hasA = n => Object.values(hb).includes(n), foco = L >= 10 ? (s.foco || '') : '';
+            const halfBT = Math.floor(bt / 2), refB = (hasA('Feitiços Refinados') ? halfBT : 0) + (foco === 'Refino' ? halfBT : 0), refino = foco === 'Refino' ? halfBT : 0;
+            const reforco = hasA('Reforço Amaldiçoado') ? (L >= 20 ? 4 : L >= 10 ? 3 : 2) : 0, olhar = hasA('Olhar Preciso') ? 2 + Math.floor(L / 4) : 0;
+            const ptsLeft = 2 * Math.floor(L / 4) - AT.reduce((a, [k]) => a + (+(s.inc || {})[k] || 0), 0);
+            const fundMax = (L >= 12 ? 3 : 2) + (hasA('Expansão dos Fundamentos') ? (L >= 12 ? 2 : 1) : 0);
+            const cost = f => { if (f.nv === 0) return 0; let c = f.custo ?? Math.max(1, CUSTO[f.nv]); if (foco === 'Economia') c = Math.max(f.nv === 1 ? 0 : 1, c - 2); return c };
+            const pvMax = 10 + M.con + (L - 1) * (5 + M.con), peMax = 6 * L + M[s.tec] + half + (foco === 'Economia' ? bt : 0) + (hasA('Energia Inacabável') ? Math.floor(L / 2) : 0);
+            const pv = Math.max(0, pvMax - s.pvL), pe = Math.max(0, peMax - s.peL);
+            const sk = (n, a) => M[a] + (s.tr[n] ? bt : 0) + (s.ma[n] ? bt : 0);
+            const def = 10 + M.des + half + (+s.defO || 0) + (hasA('Movimentos Imprevisíveis') ? Math.min(M[s.chave], L) : 0), ini = M.des + (hasA('Reação Rápida') ? M[s.chave] : 0), cd = 10 + half + M[s.chave] + bt + refB + reforco, cdA = 10 + half + M[s.tec] + bt + refB + reforco;
+            const atkT = M[s.tec] + half + bt + refino + olhar, atkC = M.for + half + bt, atkD = M.des + half + bt, aten = 10 + sk('Percepção', 'sab');
+            const acesso = L < 4 ? 1 : L < 7 ? 2 : L < 11 ? 3 : L < 15 ? 4 : 5;
+            const nFe = 2 + 1 + (L - 1) + [5, 10, 15, 20].filter(x => L >= x).length + [10, 20].filter(x => L >= x).length;
+            const bump = (k, max, d) => set(k, Math.min(max, Math.max(0, s[k] - d)));
+            const push = (label, total, det) => setLog(l => [{ id: Math.random(), label, total, det }, ...l].slice(0, 12));
+            const roll = (label, b) => { let d = rnd(20), det = 'd20 ' + d; if (adv) { const e = rnd(20); det = `d20 ${d}/${e} ${adv === 'v' ? 'vant.' : 'desv.'}`; d = adv === 'v' ? Math.max(d, e) : Math.min(d, e); setAdv(null) } push(label, d + b, det + ' ' + sg(b) + (d === 20 ? ' · crítico' : d === 1 ? ' · falha crítica' : '')) };
+            const rollDice = (n, f, b, label) => { if (f === 20 && n === 1) return roll(label || 'd20', b); const r = Array.from({ length: n }, () => rnd(f)); push(label || n + 'd' + f, r.reduce((a, c) => a + c, 0) + b, `${n}d${f} [${r.join(',')}] ${sg(b)}`) };
+            const dmgRoll = (f) => { const m = /(\d+)d(\d+)\s*([+-]\s*\d+)?/.exec(f.dano || ''); const ex = f.nv === 0 ? 0 : f.nv <= 2 ? M[s.tec] : f.nv === 3 ? 2 * M[s.tec] : f.nv === 4 ? 2 * M[s.tec] + L : 2 * M[s.tec] + 2 * L; if (!m) return push(f.n + ' (dano)', ex, 'sem dado · Conjuração Aprimorada ' + sg(ex)); rollDice(+m[1], +m[2], (+(m[3] || '0').replace(/\s/g, '')) + ex, f.n + ' (dano)') };
+            const cast = f => { const c = cost(f); if (c > pe) return push(f.n, 0, 'PE insuficiente (' + c + ' PE)'); set('peL', s.peL + c); roll(f.n + ' (acerto)', atkT) };
+            const nav = ['Ficha', 'Ações', 'Técnica', 'Lore', 'Domínio', 'Progressão', 'Resumo', 'Mestre'];
+            const inp = (k, ph, c = '') => h`<input className=${'in ' + c} value=${s[k] ?? ''} placeholder=${ph} aria-label=${ph} onChange=${e => set(k, e.target.value)}/>`;
+            const area = (k, ph, r) => h`<textarea className="in" rows=${r || 5} placeholder=${ph} aria-label=${ph} value=${s[k] ?? ''} onChange=${e => set(k, e.target.value)}/>`;
+            const head = (n, t, sub) => h`<div className="fade flex items-end gap-5 pt-10 pb-3 border-b border-[var(--ln)] mb-6 flex-wrap"><span className="mono text-[var(--dim)] pb-2">ARQ·0${n}</span><h1 className="big text-5xl sm:text-7xl m-0 uppercase">${t}</h1><span className="mono text-[var(--dim)] ml-auto pb-2">${sub || ''}</span></div>`;
+            const sec = (t, r) => h`<div className="flex items-center gap-4 mt-10 mb-4"><span className="mono text-[var(--gd)]">${t}</span><span className="flex-1 border-t border-[var(--ln)]"></span><span className="mono text-[var(--dim)]">${r || ''}</span></div>`;
+            const stat = (l, v, sub, on) => h`<${on ? 'button' : 'div'} className="tile w-full" onClick=${on}><div className="mono text-[var(--dim)]">${l}</div><div className="big text-4xl my-1">${v}</div><div className="mono text-[var(--dim)] normal-case tracking-normal">${sub}</div><//>`;
+            const dot = (k, n) => h`<button className="bx !px-2 !py-0" title="○ sem treino · ● treinado · ◆ mestre" aria-label=${'Treino em ' + n} onClick=${e => { e.stopPropagation(); const t = s.tr[n], m = s.ma[n]; setS(p => ({ ...p, tr: { ...p.tr, [n]: !t ? 1 : m ? 0 : 1 }, ma: { ...p.ma, [n]: !t ? 0 : m ? 0 : 1 } })) }}>${s.ma[n] ? '◆' : s.tr[n] ? '●' : '○'}</button>`;
+            const trow = (k, n, a, extra) => { const t = sk(n, a); return h`<div key=${n} className="row" onClick=${() => roll(n, t)}>${dot('tr', n)}<span className=${s.tr[n] ? 'font-bold' : ''}>${n}</span><span className="mono text-[var(--dim)]">${a.toUpperCase()}</span><i></i><b className="big text-xl">${sg(t)}</b></div>` };
+
+
+            const card = (t, tp, d, btns) => h`<div key=${t} className="border-t border-[var(--ln)] py-4"><div className="flex justify-between gap-3"><h3 className="text-xl font-bold m-0">${t}</h3><span className="mono text-[var(--dim)]">${tp}</span></div><p className="text-[#c9bdb2] my-2">${d}</p><div className="flex gap-2 flex-wrap">${(btns || []).map(([l, f]) => h`<button key=${l} className="bx" onClick=${f}>${l}</button>`)}</div></div>`;
+
+            const slotsH = Array.from({ length: Math.max(0, L - 1) }, (_, i) => i + 2);
+            const incA = (k, d) => { const cur = +(s.inc || {})[k] || 0; if (d > 0 && ptsLeft <= 0) return; if (d < 0 && cur <= 0) return; set('inc', { ...(s.inc || {}), [k]: cur + d }) };
+            const changeLevel = n => { n = Math.max(1, Math.min(20, n)); setS(p => { let fe = p.fe; const need = nF(n); while (fe.length < need) fe = [...fe, { n: 'Feitiço ' + (fe.length + 1), nv: 0, dano: '', desc: '' }]; return { ...p, lvl: n, fe } }); if (n > L) { setGained(n); setPg(5) } };
+            const gainsOf = n => { const g = (FEAT[n] || []).map(x => x[0]); if (n >= 2) g.push('1 Habilidade de Especialista (ou talento)'); g.push('1 Aptidão Amaldiçoada'); if (n % 4 === 0) g.push('+2 pontos de atributo'); if ([5, 9, 13, 17].includes(n)) g.push('Bônus de treinamento +1'); g.push(n > 1 ? '+' + (nF(n) - nF(n - 1)) + ' Feitiço(s), já criado(s) na aba Técnica' : '3 Feitiços iniciais'); g.push('PV +' + (5 + M.con) + ' · PE +6' + (n % 2 === 0 ? ' e +1 do clã Gojo' : '')); if (n >= Math.max(1, L) && [4, 7, 11, 15].includes(n)) g.push('Acesso a Feitiços de nível ' + (n === 4 ? 2 : n === 7 ? 3 : n === 11 ? 4 : 5)); return g };
+            const pend = [];
+            if (ptsLeft > 0) pend.push(ptsLeft + ' ponto(s) de atributo para distribuir (aba Ficha, botões + e −)');
+            if (ptsLeft < 0) pend.push('Você gastou ' + (-ptsLeft) + ' ponto(s) de atributo a mais do que o nível permite');
+            { const f = slotsH.filter(n => !hb['h' + n]).length; if (f) pend.push(f + ' Habilidade(s) de Especialista para escolher'); }
+            { const f = Array.from({ length: L }, (_, i) => i + 1).filter(n => !(ap['a' + n] || '').trim()).length; if (f) pend.push(f + ' Aptidão(ões) Amaldiçoada(s) para anotar'); }
+            if (s.fund.length < fundMax) pend.push('Escolher ' + (fundMax - s.fund.length) + ' Mudança(s) de Fundamento (aba Técnica)');
+            if (L >= 10 && !s.foco) pend.push('Escolher o Foco Amaldiçoado');
+            { const f = s.fe.filter(x => !x.desc && !x.dano).length; if (f) pend.push(f + ' Feitiço(s) para descrever (aba Técnica)'); }
+            const habSec = h`<div>${sec('Habilidades e características', 'Liberadas pelo seu nível')}<div className="grid md:grid-cols-2 gap-x-10">
+      ${Array.from({ length: L }, (_, i) => i + 1).flatMap(n => FEAT[n] || []).map(([a, d]) => card(a, 'Especialização', d))}
+      ${slotsH.map(n => { const nm = hb['h' + n]; const ab = ABIL.find(x => x[0] === nm); return card(nm ? nm + (nm === 'Talento' && hb['n' + n] ? ': ' + hb['n' + n] : '') : 'Habilidade do nível ' + n + ' (a escolher)', 'Nível ' + n, ab ? ab[2] : (nm ? 'Talento: descreva o efeito na aba Progressão.' : 'Escolha na aba Progressão.')) })}</div>
+      ${L >= 10 ? h`<label className="block mt-4"><span className="mono text-[var(--dim)]">Foco Amaldiçoado</span><select className="in !w-56" value=${s.foco || ''} onChange=${e => set('foco', e.target.value)}><option value="">— escolher —</option><option value="Destruição">Destruição (+1 dano por dado, +BT no dano)</option><option value="Economia">Economia (custos -2, PE +BT)</option><option value="Refino">Refino (+1 aptidão, +metade do BT em CD e ataque)</option></select></label>` : ''}
+      ${ap && Object.values(ap).some(Boolean) ? h`<p className="text-[#c9bdb2] mt-4"><b>Aptidões Amaldiçoadas:</b> ${Array.from({ length: L }, (_, i) => ap['a' + (i + 1)]).filter(Boolean).join(', ')}</p>` : ''}</div>`;
+            const evo = h`<div className="fade">
+      <div className="flex flex-wrap items-center gap-3 mb-4"><span className="mono text-[var(--dim)]">Nível atual</span><b className="big text-5xl flame">${L}</b>
+       <button className="bx on" disabled=${L >= 20} onClick=${() => changeLevel(L + 1)}>▲ Subir de nível</button>
+       <button className="bx" disabled=${L <= 1} onClick=${() => confirm('Descer para o nível ' + (L - 1) + '?') && changeLevel(L - 1)}>▼ Descer</button></div>
+      ${gained ? h`<div className="pop tile mb-4" style=${{ borderColor: 'var(--em)' }}><div className="mono text-[var(--gd)]">Nível ${gained} alcançado: o que você ganhou</div><ul className="m-0 mt-2 pl-5 text-[#c9bdb2]">${gainsOf(gained).map(g => h`<li key=${g}>${g}</li>`)}</ul><button className="bx mt-3" onClick=${() => setGained(null)}>Entendi</button></div>` : ''}
+      ${sec('Pendências', pend.length ? pend.length + ' para resolver' : 'tudo em dia')}
+      ${pend.length ? h`<ul className="m-0 pl-5 text-[var(--gd)]">${pend.map(x => h`<li key=${x}>${x}</li>`)}</ul>` : h`<p className="text-[#c9bdb2]">Nada pendente neste nível.</p>`}
+      ${sec('Habilidades de Especialista', '1 por nível a partir do 2, ou um talento')}
+      <div className="grid md:grid-cols-2 gap-x-10">${slotsH.map(n => {
+                const cur = hb['h' + n] || ''; const ab = ABIL.find(x => x[0] === cur); const taken = Object.entries(hb).filter(([k]) => k[0] === 'h' && k !== 'h' + n).map(([, v]) => v);
+                return h`<div key=${n} className="border-t border-[var(--ln)] py-3"><label><span className="mono text-[var(--dim)]">Nível ${n}</span>
+        <select className="in" value=${cur} onChange=${e => set('hab', { ...hb, ['h' + n]: e.target.value })}><option value="">— escolher —</option><option value="Talento">Talento (descrever)</option>${ABIL.filter(x => x[1] <= n && (REP.includes(x[0]) || !taken.includes(x[0]))).map(x => h`<option key=${x[0]} value=${x[0]}>${x[0]}</option>`)}</select></label>
+        ${ab ? h`<p className="m-0 mt-2 text-[#c9bdb2]">${ab[2]}</p>` : ''}${cur === 'Talento' ? h`<input className="in mt-2" placeholder="Nome e efeito do talento" value=${hb['n' + n] || ''} onChange=${e => set('hab', { ...hb, ['n' + n]: e.target.value })}/>` : ''}</div>`
+            })}</div>
+      ${sec('Aptidões Amaldiçoadas', '1 por nível')}<div className="grid md:grid-cols-2 gap-x-10">${Array.from({ length: L }, (_, i) => i + 1).map(n => h`<label key=${n} className="block py-2"><span className="mono text-[var(--dim)]">Nível ${n}</span><input className="in" placeholder="Nome da aptidão (capítulo 8 do livro)" value=${ap['a' + n] || ''} onChange=${e => set('aptS', { ...ap, ['a' + n]: e.target.value })}/></label>`)}</div></div>`;
+            const pgFicha = h`<div>${head(1, 'Ficha', `Nível ${L} · Herdado (Gojo) · Especialista em Técnica`)}
+      <p className="text-xl max-w-2xl">${s.nome} é do clã Gojo e vive de técnica: <span className="flame font-bold">${s.tecnica || 'Soberania das Chamas'}</span>. Atributo da técnica: ${AT.find(a => a[0] === s.tec)[2]}.</p>
+      ${sec('Em combate', 'Clique para rolar')}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-[var(--ln)]">
+       ${stat('Defesa', def, '10 + DES + nível/2')}${stat('Atenção', aten, '10 + Percepção')}${stat('Iniciativa', sg(ini), 'd20 + DES', () => roll('Iniciativa', ini))}
+       ${stat('Acerto técnica', sg(atkT), 'mod + nível/2 + BT', () => roll('Ataque amaldiçoado', atkT))}${stat('CD', cdA, '10 + nível/2 + mod + BT')}${stat('Deslocamento', '9 m', 'caminhada')}</div>
+      ${sec('Atributos', ptsLeft > 0 ? '▲ ' + ptsLeft + ' ponto(s) para distribuir com + e −' : ptsLeft < 0 ? 'pontos gastos a mais: ' + (-ptsLeft) : 'clã Gojo já somado · campo pequeno = valor base')}
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-px bg-[var(--ln)]">${AT.map(([k, ab, nm]) => h`<div key=${k} className="tile hov cursor-pointer" onClick=${() => roll(nm, M[k])}><div className="mono text-[var(--dim)]">${ab}${k === s.tec ? ' · técnica' : ''}</div><div className=${'big text-4xl my-1 ' + (k === s.tec ? 'text-[var(--gd)]' : '')}>${sg(M[k])}</div>
+        <div className="flex flex-wrap items-center gap-2 mono text-[var(--dim)]" onClick=${e => e.stopPropagation()}>${A[k]}<button className="bx !px-2 !py-0" aria-label=${'Diminuir ' + nm} onClick=${() => incA(k, -1)}>−</button><button className=${'bx !px-2 !py-0 ' + (ptsLeft > 0 ? 'on' : '')} aria-label=${'Aumentar ' + nm} onClick=${() => incA(k, 1)}>+</button><input type="number" min="1" max="30" aria-label=${'Base ' + nm} className="in !w-12 text-center" value=${s.base[k]} onChange=${e => set('base', { ...s.base, [k]: +e.target.value })}/></div></div>`)}</div>
+      <div className="flex flex-wrap gap-4 mt-3 items-center mono text-[var(--dim)]">Bônus do clã: +2 em<select className="in !w-24" value=${s.clan} onChange=${e => set('clan', e.target.value)}><option value="int">INT</option><option value="sab">SAB</option></select>
+       Atributo da técnica<select className="in !w-24" value=${s.tec} onChange=${e => set('tec', e.target.value)}>${AT.map(([k, a]) => h`<option key=${k} value=${k}>${a}</option>`)}</select>
+       Atributo da CD de especialização<select className="in !w-24" value=${s.chave} onChange=${e => set('chave', e.target.value)}><option value="int">INT</option><option value="sab">SAB</option></select></div>
+      <div className="grid gap-x-10 gap-y-2 lg:grid-cols-3 mt-2">
+       <div>${sec('Derivados')}${[['Pontos de Vida', pvMax], ['Pontos de Energia', peMax], ['Integridade da Alma', pvMax], ['Defesa', def], ['Atenção', aten], ['Iniciativa', sg(ini)], ['Deslocamento', '9 m'], ['Dado de Vida', L + 'd8'], ['Bônus de treinamento', sg(bt)], ['CD de Especialização', cd], ['CD Amaldiçoada', cdA]].map(([a, b]) => h`<div key=${a} className="row !cursor-default"><span>${a}</span><i></i><b>${b}</b></div>`)}</div>
+       <div>${sec('Testes de resistência')}${RS.map(([n, a]) => trow('tr', n, a))}<p className="mono text-[var(--dim)] normal-case tracking-normal mt-2">Especialista em Técnica: treinado em Astúcia ou Vontade.</p></div>
+       <div>${sec('Perícias', '○ ● ◆ = sem treino · treinado · mestre')}${SK.map(([n, a]) => trow('tr', n, a))}</div></div>${habSec}</div>`;
+
+            const tabs = ['Rolador', 'Testes', 'Ação comum', 'Ação bônus', 'Reação', 'Movimento', 'Descanso'];
+            const pgAcoes = h`<div>${head(2, 'Ações', 'O que dá pra fazer no turno')}
+      <div className="flex overflow-x-auto border-y border-[var(--ln)] bg-black/40 mb-6" role="tablist">${tabs.map(t => h`<button key=${t} role="tab" className=${'mono px-4 py-4 whitespace-nowrap ' + (tab === t ? 'text-[var(--gd)] border-b-2 border-[var(--em)]' : 'text-[var(--dim)]')} onClick=${() => setTab(t)}>${t}</button>`)}</div>
+      ${tab === 'Rolador' ? h`<div className="fade"><div className="flex flex-wrap gap-6 items-end">
+        <div><div className="mono text-[var(--dim)] mb-2">Dado</div><div className="flex">${[4, 6, 8, 10, 12, 20, 100].map(d => h`<button key=${d} className=${'bx ' + (die === d ? 'on' : '')} onClick=${() => setDie(d)}>d${d}</button>`)}</div></div>
+        <div><div className="mono text-[var(--dim)] mb-2">Quantidade</div><div className="flex items-center"><button className="bx" onClick=${() => setQty(Math.max(1, qty - 1))}>−</button><span className="bx">${qty}</span><button className="bx" onClick=${() => setQty(qty + 1)}>+</button></div></div>
+        <div><div className="mono text-[var(--dim)] mb-2">Modificador</div><div className="flex items-center"><button className="bx" onClick=${() => setDm(dm - 1)}>−</button><span className="bx">${sg(dm)}</span><button className="bx" onClick=${() => setDm(dm + 1)}>+</button></div></div>
+        <div><div className="mono text-[var(--dim)] mb-2">Próximo d20</div><button className=${'bx ' + (adv === 'v' ? 'on' : '')} onClick=${() => setAdv(adv === 'v' ? null : 'v')}>vantagem</button><button className=${'bx ' + (adv === 'd' ? 'on' : '')} onClick=${() => setAdv(adv === 'd' ? null : 'd')}>desvantagem</button></div>
+        <button className="bx on" onClick=${() => rollDice(qty, die, dm)}>ROLAR</button></div>
+       ${log[0] ? h`<div key=${log[0].id} className="pop mt-8 flex items-baseline gap-5"><span className="big text-8xl flame">${log[0].total}</span><div><b className="text-xl">${log[0].label}</b><div className="mono text-[var(--dim)] normal-case tracking-normal">${log[0].det}</div></div></div>` : h`<div className="mt-8 flex items-baseline gap-5"><span className="big text-8xl text-[var(--ln)]">00</span><b className="text-xl">nada rolado ainda</b></div>`}
+       ${sec('Registro de rolagens', log.length ? log.length + ' recentes' : 'vazio')}${log.map(r => h`<div key=${r.id} className="row !cursor-default mono normal-case tracking-normal"><span>${r.label}</span><i></i><span className="text-[var(--dim)]">${r.det}</span><b className="text-[var(--gd)] text-base">${r.total}</b></div>`)}</div>` :
+                    tab === 'Testes' ? h`<div className="fade">${sec('Atributos', 'd20 + mod')}<div className="flex flex-wrap gap-px">${AT.map(([k, , n]) => h`<button key=${k} className="bx" onClick=${() => roll(n, M[k])}>${n} ${sg(M[k])}</button>`)}</div>
+       ${sec('Resistência')}<div className="flex flex-wrap gap-px">${RS.map(([n, a]) => h`<button key=${n} className=${'bx ' + (s.tr[n] ? 'on' : '')} onClick=${() => roll(n, sk(n, a))}>${n} ${sg(sk(n, a))}</button>`)}</div>
+       ${sec('Perícias')}<div className="flex flex-wrap gap-px">${SK.map(([n, a]) => h`<button key=${n} className=${'bx ' + (s.tr[n] ? 'on' : '')} onClick=${() => roll(n, sk(n, a))}>${n} ${sg(sk(n, a))}</button>`)}</div></div>` :
+                        tab === 'Ação comum' ? h`<div className="grid md:grid-cols-2 gap-x-10 fade">
+       ${card('Atacar', 'Ação comum', 'Ataque com arma ou desarmado. Corpo a corpo usa Força (ou Destreza com Fineza); à distância usa Destreza.', [['Corpo a corpo ' + sg(atkC), () => roll('Ataque corpo a corpo', atkC)], ['À distância ' + sg(atkD), () => roll('Ataque à distância', atkD)]])}
+       ${card('Conjurar Feitiço', 'Ação comum', 'Escolha o Feitiço na aba Técnica: o site gasta o PE e rola o acerto.', [['Ir para Técnica', () => setPg(2)]])}
+       ${card('Esquivar', 'Ação comum', 'Foque em evitar golpes. Confira o efeito exato no capítulo de combate do livro.')}
+       ${card('Esconder', 'Ação comum', 'Teste de Furtividade contra a Atenção de quem procura.', [['Furtividade ' + sg(sk('Furtividade', 'des')), () => roll('Furtividade', sk('Furtividade', 'des'))]])}
+       ${card('Ajudar / Preparar / Usar objeto', 'Ação comum', 'Ações utilitárias. Combine os detalhes com o mestre.')}</div>` :
+                            tab === 'Ação bônus' ? h`<div className="fade">${card('Feitiços de ação bônus', 'Ação bônus', 'Feitiços da sua técnica que custem ação bônus aparecem na aba Técnica. Feitiço Rápido (nível 6) reduz o custo em ação.')}</div>` :
+                                tab === 'Reação' ? h`<div className="fade">${card('Reação', 'Uma por rodada', 'Ataque de oportunidade e reações de Feitiços. Anote as suas reações na aba Técnica.')}</div>` :
+                                    tab === 'Movimento' ? h`<div className="fade">${card('Deslocamento', 'Movimento', '9 m por ação de movimento, podendo dividir antes e depois da ação.')}</div>` :
+                                        h`<div className="fade">${card('Descanso longo', 'Fora de combate', 'Recupera PV e PE ao máximo.', [['Descansar', () => { setS(p => ({ ...p, pvL: 0, peL: 0 })); push('Descanso longo', 0, 'PV e PE cheios') }]])}</div>`}</div>`;
+
+            const pgTec = h`<div>${head(3, 'Técnica', s.tecnica || 'Soberania das Chamas')}
+      <div className="grid md:grid-cols-2 gap-10"><div><div className="mono text-[var(--dim)]">Nome da técnica</div>${inp('tecnica', 'Nome', 'big !text-3xl')}<div className="mono text-[var(--dim)] mt-5">Funcionamento básico e descrição</div>${area('tdesc', 'Descreva a Soberania das Chamas', 8)}</div>
+       <div>${sec('Herança do clã Gojo')}<div className="space-y-3 text-[#c9bdb2]"><p><b className="text-[var(--tx)]">Bônus de atributo.</b> +2 em INT ou SAB e +1 no outro (já aplicado).</p><p><b className="text-[var(--tx)]">Treinamentos de clã.</b> Treinado em 2 perícias entre Feitiçaria, Percepção e Intuição (ou especialista em uma).</p><p><b className="text-[var(--tx)]">Potencial Lendário.</b> +1 PE em todo nível par e +1 Feitiço no nível 1 e nos níveis 5, 10, 15 e 20.</p></div></div></div>
+      ${sec('Domínio dos Fundamentos', s.fund.length + ' de ' + fundMax + ' escolhidas')}<div className="grid md:grid-cols-2 gap-x-10">${FUND.map(([n, d]) => { const on = s.fund.includes(n); return h`<div key=${n} className="border-t border-[var(--ln)] py-3 flex gap-3"><button className=${'bx h-fit ' + (on ? 'on' : '')} onClick=${() => set('fund', on ? s.fund.filter(x => x !== n) : [...s.fund, n])}>${on ? 'ativo' : 'off'}</button><div><b>${n}</b><p className="m-0 text-[#c9bdb2]">${d}</p></div></div>` })}</div>
+      ${sec('Feitiços', `${s.fe.length} de ${nFe} · acesso até nível ${acesso}`)}<p className="text-[#c9bdb2]">Conjuração Aprimorada: Feitiço de dano soma <b>${sg(M[s.tec])}</b> (nível 1-2) ou <b>${sg(2 * M[s.tec])}</b> (nível 3).</p>
+      <div className="grid md:grid-cols-2 gap-px bg-[var(--ln)]">${s.fe.map((f, i) => {
+                const up = (k, v) => set('fe', s.fe.map((x, j) => j === i ? { ...x, [k]: v } : x)); const c = cost(f); return h`<div key=${i} className="tile"><div className="flex gap-3"><input className="in font-bold text-lg" value=${f.n} aria-label="Nome do Feitiço" onChange=${e => up('n', e.target.value)}/><button className="bx" aria-label="Remover" onClick=${() => set('fe', s.fe.filter((_, j) => j !== i))}>✕</button></div>
+        <div className="grid grid-cols-3 gap-3 my-3"><label><span className="mono text-[var(--dim)]">Nível</span><select className="in" value=${f.nv} onChange=${e => { up('nv', +e.target.value); up('custo', undefined) }}>${[0, 1, 2, 3, 4, 5].filter(n => n <= acesso).map(n => h`<option key=${n} value=${n}>${n}</option>`)}</select></label>
+         <label><span className="mono text-[var(--dim)]">Custo PE</span><input type="number" className="in" value=${c} onChange=${e => up('custo', +e.target.value)}/></label>
+         <label><span className="mono text-[var(--dim)]">Dano</span><input className="in" placeholder="2d6" value=${f.dano} onChange=${e => up('dano', e.target.value)}/></label></div>
+        <textarea className="in !min-h-[70px]" placeholder="Efeito, alcance, CD…" value=${f.desc} onChange=${e => up('desc', e.target.value)}></textarea>
+        <div className="flex gap-2 mt-3"><button className="bx on" onClick=${() => cast(f)}>Conjurar ${sg(atkT)}</button><button className="bx" onClick=${() => dmgRoll(f)}>Rolar dano</button><span className="mono text-[var(--dim)] ml-auto self-center">CD ${cdA}</span></div></div>`
+            })}</div>
+      <button className="bx mt-4" onClick=${() => set('fe', [...s.fe, { n: 'Novo Feitiço', nv: 0, dano: '', desc: '' }])}>+ Feitiço</button>
+      ${sec('Aptidões amaldiçoadas', '1 por nível')}${area('apt', 'Anote suas aptidões amaldiçoadas', 4)}</div>`;
+
+            const pgLore = h`<div>${head(4, 'Lore', 'O que aconteceu, em ordem')}<h2 className="big text-4xl m-0 mb-6">${s.nome}</h2>${area('lore', 'Ainda não escrita.', 10)}</div>`;
+            const pgDom = h`<div>${head(5, 'Domínio', 'Expansão de domínio')}</div>`;
+            const pgProg = h`<div>${head(6, 'Progressão', 'Níveis 1 a 20')}${evo}<p className="text-[#c9bdb2] max-w-2xl">PV usa o valor fixo (5 + CON por nível). A linha do seu nível fica destacada. Atributos como estão hoje.</p>
+      <div className="overflow-x-auto border border-[var(--ln)] mt-4"><table className="w-full text-left mono normal-case tracking-normal min-w-[720px]"><thead className="bg-black/50 text-[var(--dim)] uppercase"><tr>${['Nível', 'BT', 'PV', 'PE', 'Defesa', 'CD', 'Feitiços', 'Acesso', 'Marco'].map(c => h`<th key=${c} className="p-3 font-normal">${c}</th>`)}</tr></thead><tbody>
+      ${Array.from({ length: 20 }, (_, i) => i + 1).map(n => { const b = 2 + [5, 9, 13, 17].filter(x => n >= x).length, hf = Math.floor(n / 2); const fe = 3 + (n - 1) + [5, 10, 15, 20].filter(x => n >= x).length + [10, 20].filter(x => n >= x).length; const ac = n < 4 ? 1 : n < 7 ? 2 : n < 11 ? 3 : n < 15 ? 4 : 5; return h`<tr key=${n} className=${'border-t border-[var(--ln)] ' + (n === L ? 'bg-[#2b1508] text-[var(--gd)]' : 'text-[#c9bdb2]')}><td className="p-3">${n}</td><td className="p-3">${sg(b)}</td><td className="p-3">${10 + M.con + (n - 1) * (5 + M.con)}</td><td className="p-3">${6 * n + M[s.tec] + hf}</td><td className="p-3">${10 + M.des + hf}</td><td className="p-3">${10 + hf + M[s.tec] + b}</td><td className="p-3">${fe}</td><td className="p-3">${ac}</td><td className="p-3 font-sans text-sm">${MARCO[n] || 'Habilidade de Especialista em Técnicas (ou talento) e aptidão amaldiçoada.'}</td></tr>` })}</tbody></table></div></div>`;
+            const pgRes = h`<div>${head(7, 'Resumo', 'A ficha em 2 minutos')}
+      <p className="text-2xl max-w-3xl font-bold leading-snug">${s.nome} é um Especialista em Técnica do clã Gojo, nível ${L}. Vive da técnica <span className="flame">${s.tecnica || 'Soberania das Chamas'}</span>: seus Feitiços dependem de ${AT.find(a => a[0] === s.tec)[2]}, e ele aprimora cada conjuração com os Fundamentos.</p>
+      ${sec('A ficha em uma linha', 'Construção')}
+      ${[['Origem', 'Herdado (Clã Gojo)'], ['Especialização', 'Especialista em Técnica (d8)'], ['Técnica', s.tecnica || 'Soberania das Chamas'], ['Atributo da técnica', AT.find(a => a[0] === s.tec)[2]], ['PV / PE', `${pvMax} / ${peMax}`], ['Defesa / Atenção', `${def} / ${aten}`], ['CD Amaldiçoada', cdA], ['Acerto da técnica', sg(atkT)], ['Fundamentos', s.fund.join(', ') || 'nenhum'], ['Feitiços', `${s.fe.length} de ${nFe}, até nível ${acesso}`]].map(([a, b]) => h`<div key=${a} className="row !cursor-default"><span>${a}</span><i></i><b className="mono normal-case tracking-normal">${b}</b></div>`)}
+      <p className="text-[#c9bdb2] mt-4 max-w-2xl">Conjuração Aprimorada soma ${sg(M[s.tec])} ao dano dos Feitiços de nível 1 e 2. O clã Gojo dá +1 PE por nível par e Feitiços extras.</p></div>`;
+            const pgMes = h`<div>${head(8, 'Mestre', 'Só o que importa na mesa')}<div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--ln)]">${stat('PV', `${pv}/${pvMax}`, 'vida')}${stat('PE', `${pe}/${peMax}`, 'energia')}${stat('Defesa', def, '')}${stat('CD', cdA, 'Feitiços')}</div>
+      ${sec('Resistências')}<div className="flex flex-wrap gap-2">${RS.map(([n, a]) => h`<span key=${n} className="bx">${n} ${sg(sk(n, a))}</span>`)}</div>${sec('Notas de campanha')}${area('notas', 'Anotações para a mesa', 8)}</div>`;
+
+            const pages = [pgFicha, pgAcoes, pgTec, pgLore, pgDom, pgProg, pgRes, pgMes];
+            const exp = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(s, null, 1)], { type: 'application/json' })); a.download = 'ficha-vicente.json'; a.click() };
+            const imp = e => { const f = e.target.files[0]; f && f.text().then(t => { try { setS({ ...D, ...JSON.parse(t) }) } catch (x) { alert('Arquivo inválido') } }) };
+            const bar = (l, v, mx, k, ds) => h`<div className="flex items-center gap-1 border-r border-[var(--ln)] pr-3 mr-1"><span className="mono text-[var(--dim)] mr-1">${l}</span>${ds.filter(d => d < 0).map(d => h`<button key=${d} className="bx" onClick=${() => bump(k, mx, d)}>${d}</button>`)}<span className="mx-2 min-w-[70px] text-center border-b-2 border-[var(--em)]"><b className="big text-2xl">${v}</b> <span className="mono text-[var(--dim)]">/ ${mx}</span></span>${ds.filter(d => d > 0).map(d => h`<button key=${d} className="bx" onClick=${() => bump(k, mx, d)}>+${d}</button>`)}</div>`;
+
+            return h`<div className="relative z-10 lg:pl-60">
+      <aside className="lg:fixed lg:inset-y-0 lg:left-0 lg:w-60 border-r border-[var(--ln)] bg-[var(--bg)] z-30 flex lg:block flex-wrap">
+       <div className="px-5 py-6 flex items-center gap-3"><span className="text-2xl">🔥</span><b className="big text-lg">VICENTE</b></div>
+       <nav className="nav flex lg:block overflow-x-auto w-full lg:w-auto">${nav.map((n, i) => h`<a key=${n} className=${'mono whitespace-nowrap ' + (pg === i ? 'on' : '')} onClick=${() => setPg(i)}><span>${i + 1}</span>${n}</a>`)}</nav>
+       <div className="flex lg:flex-col gap-2 p-5 lg:absolute lg:bottom-0"><button className="bx" onClick=${exp}>Exportar</button><label className="bx cursor-pointer">Importar<input type="file" accept=".json" className="hidden" onChange=${imp}/></label><button className="bx" onClick=${login}>${pw ? 'Sair do modo editor' : 'Modo editor'}</button><button className="bx" onClick=${() => confirm('Voltar ao padrão? No modo editor isso também apaga a ficha na nuvem.') && setS(D)}>Redefinir</button></div></aside>
+      <header className="sticky top-0 z-20 bg-black/85 backdrop-blur border-b border-[var(--ln)] px-4 py-3 flex flex-wrap items-center gap-y-2">
+       ${bar('PV', pv, pvMax, 'pvL', [-5, -1, 1, 5])}${bar('PE', pe, peMax, 'peL', [-1, 1])}
+       <button className=${'bx ' + (adv === 'v' ? 'on' : '')} onClick=${() => setAdv(adv === 'v' ? null : 'v')}>vant.</button><button className=${'bx ' + (adv === 'd' ? 'on' : '')} onClick=${() => setAdv(adv === 'd' ? null : 'd')}>desv.</button>
+       <label className="bx ml-2 flex items-center gap-2">NV<select className="bg-transparent" value=${L} onChange=${e => changeLevel(+e.target.value)}>${Array.from({ length: 20 }, (_, i) => h`<option key=${i} value=${i + 1} className="bg-black">${i + 1}</option>`)}</select></label>
+       <button className="bx ml-2" onClick=${() => { setS(p => ({ ...p, pvL: 0, peL: 0 })); push('Descanso longo', 0, 'PV e PE cheios') }}>descanso</button>${pend.length ? h`<button className="bx ml-3" style=${{ borderColor: 'var(--em)', color: 'var(--gd)' }} onClick=${() => setPg(5)}>▲ ${pend.length} pendência(s)</button>` : ''}<span className=${'mono ml-3 ' + (sync === 'salvo' ? 'text-[var(--gd)]' : sync === 'erro' || sync === 'senha' ? 'text-red-400' : 'text-[var(--dim)]')} aria-live="polite">${SYN[sync]}</span></header>
+      <main className="max-w-6xl mx-auto px-5 pb-32">${pages[pg]}</main>
+      ${log[0] && pg !== 1 ? h`<div key=${log[0].id} className="pop fixed right-4 bottom-4 z-40 tile w-64 border-[var(--em)]"><div className="mono text-[var(--dim)]">${log[0].label}</div><div className="flex items-baseline gap-3"><span className="big text-4xl flame">${log[0].total}</span><span className="mono text-[var(--dim)] normal-case tracking-normal">${log[0].det}</span></div></div>` : ''}</div>`;
+        }
+        ReactDOM.createRoot(document.getElementById('root')).render(h`<${App}/>`);
+    </script>
+
 </body>
+
 </html>
