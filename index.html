@@ -6,6 +6,196 @@
     <title>Document</title>
 </head>
 <body>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0a0908;
+            --pn: #12100e;
+            --ln: #2a2320;
+            --tx: #ece4dc;
+            --dim: #8a7d72;
+            --em: #ff6a1a;
+            --gd: #ffb347
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--tx);
+            font-family: 'Archivo', system-ui, sans-serif
+        }
     
+        body::before {
+            content: "";
+            position: fixed;
+            inset: auto 0 0 0;
+            height: 45vh;
+            background: radial-gradient(ellipse at 50% 130%, rgba(255, 106, 26, .28), transparent 65%);
+            pointer-events: none;
+            animation: glow 5s ease-in-out infinite
+        }
+    
+        @keyframes glow {
+            50% {
+                opacity: .6
+                }
+        }
+    
+        .mono {
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            font-size: .72rem
+        }
+    
+        .big {
+            font-weight: 900;
+            letter-spacing: -.02em;
+            line-height: .95
+        }
+    
+        .tile {
+            border: 1px solid var(--ln);
+            background: var(--pn);
+            padding: 14px 16px;
+            text-align: left;
+            transition: border-color .2s, background .2s
+        }
+    
+        button.tile:hover,
+        .hov:hover {
+            border-color: var(--em);
+            background: #1a120d
+        }
+    
+        .bx {
+            border: 1px solid var(--ln);
+            background: transparent;
+            color: var(--tx);
+            padding: 6px 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: .78rem;
+            cursor: pointer;
+            transition: all .15s
+        }
+    
+        .bx:hover {
+            border-color: var(--em);
+            color: var(--gd)
+        }
+    
+            .bx.on {
+            background: #2b1508;
+            border-color: var(--em);
+            color: var(--gd)
+        }
+    
+        .in {
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid var(--ln);
+            color: var(--tx);
+            outline: 0;
+            width: 100%;
+            padding: 4px 2px;
+            font: inherit
+        }
+    
+        .in:focus {
+            border-color: var(--em)
+        }
+    
+        textarea.in {
+            border: 1px solid var(--ln);
+            padding: 8px;
+            min-height: 110px;
+            resize: vertical
+        }
+    
+        select.in {
+            background: var(--pn)
+        }
+    
+        .row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            padding: 5px 0;
+            cursor: pointer
+        }
+    
+        .row i {
+            flex: 1;
+            border-bottom: 1px dotted var(--ln);
+             transform: translateY(-3px)
+            }
+    
+        .row:hover b {
+            color: var(--gd)
+        }
+    
+        .nav a {
+            display: flex;
+            gap: 14px;
+            padding: 14px 20px;
+            cursor: pointer;
+            color: var(--dim);
+            border-left: 2px solid transparent;
+            transition: all .15s
+        }
+    
+        .nav a:hover {
+            color: var(--tx)
+        }
+    
+        .nav a.on {
+            color: var(--gd);
+            background: #15100c;
+            border-left-color: var(--em)
+        }
+    
+        .pop {
+            animation: pop .35s cubic-bezier(.2, 1.4, .4, 1)
+        }
+    
+        @keyframes pop {
+            from {
+                transform: translateY(10px) scale(.9);
+                opacity: 0
+            }
+        }
+    
+        .fade {
+            animation: fade .35s ease
+        }
+    
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+        }
+    
+        .flame {
+            background: linear-gradient(180deg, #fff0c0, var(--gd) 40%, var(--em));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent
+        }
+    
+        :focus-visible {
+            outline: 2px solid var(--gd);
+            outline-offset: 2px
+        }
+    
+        @media (prefers-reduced-motion:reduce) {
+    
+            *,
+            body::before {
+                animation: none !important;
+                transition: none !important
+            }
+        }
+    </style>
 </body>
 </html>
