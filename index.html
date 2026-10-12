@@ -118,6 +118,9 @@ const ABIL=[
 const D={nome:'Vicente Orleans e Bragança',tecnica:'Soberania das Chamas',lvl:1,inc:{},hab:{},aptS:{},foco:'',base:{for:11,des:14,con:14,int:14,sab:10,pre:10},attrV:1,clan:'int',chave:'int',tec:'int',pvL:0,peL:0,defO:0,
  tr:{'Feitiçaria':1,'Ocultismo':1,'Percepção':1,'Intuição':1,'Vontade':1},ma:{},fund:['Feitiço Preciso','Feitiço Potente'],
  tdesc:'',fixV:1,sup:0,fe:[{n:'Feitiço 3 (Gojo)',nv:1,dano:'',desc:''}],apt:'',lore:'',notas:''};
+const DESC_TEC=`O usuário dessa técnica é capaz de criar e moldar as chamas conforme a sua vontade, utilizando esse poder para criar habilidades poderosas e diferentes do padrão, desde "encantar" os punhos e objetos com fogo até criar formas com essas chamas.
+
+Toda vez que o usuário utilizar a técnica, ele acumula "Pontos de Sobrecarga". Ao chegar a 10 pontos, o corpo do usuário atinge a temperatura limite suportada e fica sem poder utilizar a técnica por 1 rodada.`;
 const FIXED=[
 {n:'Arco-íris Falso',nv:1,custo:1,tipo:'Reação · 1x por turno',btns:[['Usar reação (gasta 1 PE) e rolar TR de Reflexos','rain']],desc:`O corpo do usuário queima em altas temperaturas. Durante o combate, ao sofrer um ataque, o usuário pode usar sua reação 1 vez por turno para criar uma pequena miragem de calor que o ajuda a evitar o ataque.
 O usuário deve fazer um teste de resistência de Reflexos para evitar o ataque:
@@ -126,7 +129,7 @@ O usuário deve fazer um teste de resistência de Reflexos para evitar o ataque:
 • Falha: o usuário recebe o dano completo.
 • Falha crítica: recebe o dano todo do ataque e aumenta o estágio de superaquecimento em dois ao invés de 1.`},
 {n:'Ennetsu: Punhos Flamejantes',nv:0,custo:0,tipo:'Ataque desarmado',btns:[['Rolar acerto','hit'],['Rolar dano (d10 + d4 fogo)','dmg']],desc:`O usuário reveste os punhos, pés ou outra parte do corpo com chamas amaldiçoadas. Os ataques físicos passam a manifestar o aspecto flamejante da técnica. É o modo básico de combate do personagem.
-Dano/observação (proposta para a mesa): quando acerta um golpe desarmado, o usuário pode aumentar o dado básico do soco de 1d8 para 1d10 e acrescentar 1d4 de dano de fogo.`}];
+Dano: quando acerta um golpe desarmado, o usuário pode aumentar o dado básico do soco de 1d8 para 1d10 e acrescentar 1d4 de dano de fogo.`}];
 const mig=o=>{const r={...D,...o};if(!o.fixV){r.fe=(r.fe||[]).filter((f,i)=>!(i<2&&!f.desc&&!f.dano&&/^Feitiço \d/.test(f.n)));r.fixV=1}if(!o.attrV){r.base={...r.base,for:11,des:14,con:14,int:14};r.attrV=1}return r};
 const rnd=n=>1+Math.floor(Math.random()*n);
 const sg=n=>(n>=0?'+':'')+n;
@@ -264,7 +267,7 @@ function App(){
  const act=a=>{if(a==='rain'){const c=cost({nv:1,custo:1});if(c>pe)return push('Arco-íris Falso',0,'PE insuficiente ('+c+' PE)');set('peL',s.peL+c);roll('Arco-íris Falso (TR Reflexos)',sk('Reflexos','des'))}else if(a==='hit')roll('Ennetsu (acerto)',atkC);else{const x=rnd(10),y=rnd(4);push('Ennetsu (dano)',x+y,`d10 [${x}] + d4 fogo [${y}]`)}};
  const fixedCard=f=>h`<div key=${f.n} className="tile"><div className="flex justify-between gap-3"><b className="text-lg">${f.n}</b><span className="mono text-[var(--gd)]">fixa 🔒</span></div><div className="mono text-[var(--dim)] my-2">Nível ${f.nv} · ${f.custo} PE · ${f.tipo}</div><p className="m-0 text-[#c9bdb2] whitespace-pre-line">${f.desc}</p><div className="flex gap-2 mt-3 flex-wrap">${f.btns.map(([l,a])=>h`<button key=${a} className="bx on" onClick=${()=>act(a)}>${l}</button>`)}</div></div>`;
  const pgTec=h`<div>${head(3,'Técnica',s.tecnica||'Soberania das Chamas')}
-  <div className="grid md:grid-cols-2 gap-10"><div><div className="mono text-[var(--dim)]">Nome da técnica</div>${inp('tecnica','Nome','big !text-3xl')}<div className="mono text-[var(--dim)] mt-5">Funcionamento básico e descrição</div>${area('tdesc','Descreva a Soberania das Chamas',8)}</div>
+  <div className="grid md:grid-cols-2 gap-10"><div><div className="mono text-[var(--dim)]">Nome da técnica</div>${inp('tecnica','Nome','big !text-3xl')}<div className="mono text-[var(--dim)] mt-5">Descrição</div><p className="m-0 mt-2 text-[#c9bdb2] whitespace-pre-line">${DESC_TEC}</p></div>
    <div>${sec('Herança do clã Gojo')}<div className="space-y-3 text-[#c9bdb2]"><p><b className="text-[var(--tx)]">Bônus de atributo.</b> +2 em INT ou SAB e +1 no outro (já aplicado).</p><p><b className="text-[var(--tx)]">Treinamentos de clã.</b> Treinado em 2 perícias entre Feitiçaria, Percepção e Intuição (ou especialista em uma).</p><p><b className="text-[var(--tx)]">Potencial Lendário.</b> +1 PE em todo nível par e +1 Feitiço no nível 1 e nos níveis 5, 10, 15 e 20.</p></div></div></div>
   ${sec('Domínio dos Fundamentos',s.fund.length+' de '+fundMax+' escolhidas')}<div className="grid md:grid-cols-2 gap-x-10">${FUND.map(([n,d])=>{const on=s.fund.includes(n);return h`<div key=${n} className="border-t border-[var(--ln)] py-3 flex gap-3"><button className=${'bx h-fit '+(on?'on':'')} onClick=${()=>set('fund',on?s.fund.filter(x=>x!==n):[...s.fund,n])}>${on?'ativo':'off'}</button><div><b>${n}</b><p className="m-0 text-[#c9bdb2]">${d}</p></div></div>`})}</div>
   ${sec('Feitiços',`${s.fe.length+FIXED.length} de ${nFe} · acesso até nível ${acesso}`)}<p className="text-[#c9bdb2]">Conjuração Aprimorada: Feitiço de dano soma <b>${sg(M[s.tec])}</b> (nível 1-2) ou <b>${sg(2*M[s.tec])}</b> (nível 3).</p>
