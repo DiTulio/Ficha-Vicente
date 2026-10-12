@@ -115,7 +115,7 @@ const ABIL=[
 ['Versatilidade Ampliada',12,'Feitiços ganham 1 variação de liberação; um deles ganha variação por nível de acesso.'],
 ['Manipulação Perfeita',16,'BT Feitiços têm o custo reduzido pela metade. Pré-requisito: Dominância em Feitiço.'],
 ['Sustentação Mestre',16,'Mantém 3 Feitiços sustentados e o custo de sustentar cai 1. Pré-requisito: Sustentação Avançada.']];
-const D={nome:'Vicente Orleans e Bragança',tecnica:'Soberania das Chamas',lvl:1,inc:{},hab:{},aptS:{},foco:'',base:{for:10,des:10,con:10,int:10,sab:10,pre:10},clan:'int',chave:'int',tec:'int',pvL:0,peL:0,defO:0,
+const D={nome:'Vicente Orleans e Bragança',tecnica:'Soberania das Chamas',lvl:1,inc:{},hab:{},aptS:{},foco:'',base:{for:11,des:14,con:14,int:14,sab:10,pre:10},attrV:1,clan:'int',chave:'int',tec:'int',pvL:0,peL:0,defO:0,
  tr:{'Feitiçaria':1,'Ocultismo':1,'Percepção':1,'Intuição':1,'Vontade':1},ma:{},fund:['Feitiço Preciso','Feitiço Potente'],
  tdesc:'',fixV:1,sup:0,fe:[{n:'Feitiço 3 (Gojo)',nv:1,dano:'',desc:''}],apt:'',lore:'',notas:''};
 const FIXED=[
@@ -127,7 +127,7 @@ O usuário deve fazer um teste de resistência de Reflexos para evitar o ataque:
 • Falha crítica: recebe o dano todo do ataque e aumenta o estágio de superaquecimento em dois ao invés de 1.`},
 {n:'Ennetsu: Punhos Flamejantes',nv:0,custo:0,tipo:'Ataque desarmado',btns:[['Rolar acerto','hit'],['Rolar dano (d10 + d4 fogo)','dmg']],desc:`O usuário reveste os punhos, pés ou outra parte do corpo com chamas amaldiçoadas. Os ataques físicos passam a manifestar o aspecto flamejante da técnica. É o modo básico de combate do personagem.
 Dano/observação (proposta para a mesa): quando acerta um golpe desarmado, o usuário pode aumentar o dado básico do soco de 1d8 para 1d10 e acrescentar 1d4 de dano de fogo.`}];
-const mig=o=>{const r={...D,...o};if(!o.fixV){r.fe=(r.fe||[]).filter((f,i)=>!(i<2&&!f.desc&&!f.dano&&/^Feitiço \d/.test(f.n)));r.fixV=1}return r};
+const mig=o=>{const r={...D,...o};if(!o.fixV){r.fe=(r.fe||[]).filter((f,i)=>!(i<2&&!f.desc&&!f.dano&&/^Feitiço \d/.test(f.n)));r.fixV=1}if(!o.attrV){r.base={...r.base,for:11,des:14,con:14,int:14};r.attrV=1}return r};
 const rnd=n=>1+Math.floor(Math.random()*n);
 const sg=n=>(n>=0?'+':'')+n;
 const mod=v=>Math.floor((v-10)/2);
@@ -189,12 +189,12 @@ function App(){
  const card=(t,tp,d,btns)=>h`<div key=${t} className="border-t border-[var(--ln)] py-4"><div className="flex justify-between gap-3"><h3 className="text-xl font-bold m-0">${t}</h3><span className="mono text-[var(--dim)]">${tp}</span></div><p className="text-[#c9bdb2] my-2">${d}</p><div className="flex gap-2 flex-wrap">${(btns||[]).map(([l,f])=>h`<button key=${l} className="bx" onClick=${f}>${l}</button>`)}</div></div>`;
 
  const slotsH=Array.from({length:Math.max(0,L-1)},(_,i)=>i+2);
- const incA=(k,d)=>{const cur=+(s.inc||{})[k]||0;if(d>0&&ptsLeft<=0)return;if(d<0&&cur<=0)return;set('inc',{...(s.inc||{}),[k]:cur+d})};
+ const incA=(k,d)=>{const cur=+(s.inc||{})[k]||0;if(A[k]+d<1)return;set('inc',{...(s.inc||{}),[k]:cur+d})};
  const changeLevel=n=>{n=Math.max(1,Math.min(20,n));setS(p=>{let fe=p.fe;const need=nF(n)-FIXED.length;while(fe.length<need)fe=[...fe,{n:'Feitiço '+(fe.length+1),nv:0,dano:'',desc:''}];return {...p,lvl:n,fe}});if(n>L){setGained(n);setPg(5)}};
  const gainsOf=n=>{const g=(FEAT[n]||[]).map(x=>x[0]);if(n>=2)g.push('1 Habilidade de Especialista (ou talento)');g.push('1 Aptidão Amaldiçoada');if(n%4===0)g.push('+2 pontos de atributo');if([5,9,13,17].includes(n))g.push('Bônus de treinamento +1');g.push(n>1?'+'+(nF(n)-nF(n-1))+' Feitiço(s), já criado(s) na aba Técnica':'3 Feitiços iniciais');g.push('PV +'+(5+M.con)+' · PE +6'+(n%2===0?' e +1 do clã Gojo':''));if(n>=Math.max(1,L)&&[4,7,11,15].includes(n))g.push('Acesso a Feitiços de nível '+(n===4?2:n===7?3:n===11?4:5));return g};
  const pend=[];
  if(ptsLeft>0)pend.push(ptsLeft+' ponto(s) de atributo para distribuir (aba Ficha, botões + e −)');
- if(ptsLeft<0)pend.push('Você gastou '+(-ptsLeft)+' ponto(s) de atributo a mais do que o nível permite');
+ if(ptsLeft<0)pend.push('Atributos aumentados em '+(-ptsLeft)+' ponto(s) além do que o nível libera (confirme com o mestre)');
  {const f=slotsH.filter(n=>!hb['h'+n]).length;if(f)pend.push(f+' Habilidade(s) de Especialista para escolher');}
  {const f=Array.from({length:L},(_,i)=>i+1).filter(n=>!(ap['a'+n]||'').trim()).length;if(f)pend.push(f+' Aptidão(ões) Amaldiçoada(s) para anotar');}
  if(s.fund.length<fundMax)pend.push('Escolher '+(fundMax-s.fund.length)+' Mudança(s) de Fundamento (aba Técnica)');
@@ -224,7 +224,7 @@ function App(){
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-[var(--ln)]">
    ${stat('Defesa',def,'10 + DES + nível/2')}${stat('Atenção',aten,'10 + Percepção')}${stat('Iniciativa',sg(ini),'d20 + DES',()=>roll('Iniciativa',ini))}
    ${stat('Acerto técnica',sg(atkT),'mod + nível/2 + BT',()=>roll('Ataque amaldiçoado',atkT))}${stat('CD',cdA,'10 + nível/2 + mod + BT')}${stat('Deslocamento','9 m','caminhada')}</div>
-  ${sec('Atributos',ptsLeft>0?'▲ '+ptsLeft+' ponto(s) para distribuir com + e −':ptsLeft<0?'pontos gastos a mais: '+(-ptsLeft):'clã Gojo já somado · campo pequeno = valor base')}
+  ${sec('Atributos',ptsLeft>0?'▲ '+ptsLeft+' ponto(s) para distribuir com + e −':ptsLeft<0?'+'+(-ptsLeft)+' além do nível':'clã Gojo já somado · campo pequeno = valor base')}
   <div className="grid grid-cols-3 lg:grid-cols-6 gap-px bg-[var(--ln)]">${AT.map(([k,ab,nm])=>h`<div key=${k} className="tile hov cursor-pointer" onClick=${()=>roll(nm,M[k])}><div className="mono text-[var(--dim)]">${ab}${k===s.tec?' · técnica':''}</div><div className=${'big text-4xl my-1 '+(k===s.tec?'text-[var(--gd)]':'')}>${sg(M[k])}</div>
     <div className="flex flex-wrap items-center gap-2 mono text-[var(--dim)]" onClick=${e=>e.stopPropagation()}>${A[k]}<button className="bx !px-2 !py-0" aria-label=${'Diminuir '+nm} onClick=${()=>incA(k,-1)}>−</button><button className=${'bx !px-2 !py-0 '+(ptsLeft>0?'on':'')} aria-label=${'Aumentar '+nm} onClick=${()=>incA(k,1)}>+</button><input type="number" min="1" max="30" aria-label=${'Base '+nm} className="in !w-12 text-center" value=${s.base[k]} onChange=${e=>set('base',{...s.base,[k]:+e.target.value})}/></div></div>`)}</div>
   <div className="flex flex-wrap gap-4 mt-3 items-center mono text-[var(--dim)]">Bônus do clã: +2 em<select className="in !w-24" value=${s.clan} onChange=${e=>set('clan',e.target.value)}><option value="int">INT</option><option value="sab">SAB</option></select>
