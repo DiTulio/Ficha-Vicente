@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vicente Orleans e Bragança — Ficha</title>
+<link rel="icon" type="image/gif" href="https://static2.klipy.com/ii/4e7bea9f7a3371424e6c16ebc93252fe/b6/e7/08HqhMznxMAJpMOLct.gif">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
@@ -129,8 +130,15 @@ O usuário deve fazer um teste de resistência de Reflexos para evitar o ataque:
 • Falha: o usuário recebe o dano completo.
 • Falha crítica: recebe o dano todo do ataque e aumenta o estágio de superaquecimento em dois ao invés de 1.`},
 {n:'Ennetsu: Punhos Flamejantes',nv:0,custo:0,tipo:'Ataque desarmado',btns:[['Rolar acerto','hit'],['Rolar dano (d10 + d4 fogo)','dmg']],desc:`O usuário reveste os punhos, pés ou outra parte do corpo com chamas amaldiçoadas. Os ataques físicos passam a manifestar o aspecto flamejante da técnica. É o modo básico de combate do personagem.
-Dano: quando acerta um golpe desarmado, o usuário pode aumentar o dado básico do soco de 1d8 para 1d10 e acrescentar 1d4 de dano de fogo.`}];
+Dano/observação (proposta para a mesa): quando acerta um golpe desarmado, o usuário pode aumentar o dado básico do soco de 1d8 para 1d10 e acrescentar 1d4 de dano de fogo.`}];
 const mig=o=>{const r={...D,...o};if(!o.fixV){r.fe=(r.fe||[]).filter((f,i)=>!(i<2&&!f.desc&&!f.dano&&/^Feitiço \d/.test(f.n)));r.fixV=1}if(!o.attrV){r.base={...r.base,for:11,des:14,con:14,int:14};r.attrV=1}return r};
+// Ícone animado da aba: recorta o GIF em quadrado e troca o ícone quadro a quadro (Chrome/Edge). Nos outros navegadores vale o <link rel="icon"> do <head>.
+// Para não depender do site do GIF, baixe-o, salve como icone.gif na pasta do projeto e troque ICON por 'icone.gif' (e o href do <head>).
+const ICON='https://static2.klipy.com/ii/4e7bea9f7a3371424e6c16ebc93252fe/b6/e7/08HqhMznxMAJpMOLct.gif';
+(async()=>{try{if(!('ImageDecoder' in window))return;const r=await fetch(ICON);const d=new ImageDecoder({data:r.body,type:'image/gif'});await d.tracks.ready;
+ const n=d.tracks.selectedTrack.frameCount,st=Math.max(1,Math.ceil(n/30)),c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),urls=[],dur=[];
+ for(let i=0;i<n;i+=st){const {image}=await d.decode({frameIndex:i});const w=image.displayWidth,hh=image.displayHeight,m=Math.min(w,hh);x.clearRect(0,0,64,64);x.drawImage(image,(w-m)/2,(hh-m)/2,m,m,0,0,64,64);urls.push(c.toDataURL('image/png'));dur.push(Math.max(80,(image.duration||100000)/1000*st));image.close()}
+ const l=document.querySelector('link[rel=icon]');l.type='image/png';let i=0;const tick=()=>{l.href=urls[i];const w=dur[i];i=(i+1)%urls.length;setTimeout(tick,w)};tick()}catch(e){}})();
 const rnd=n=>1+Math.floor(Math.random()*n);
 const sg=n=>(n>=0?'+':'')+n;
 const mod=v=>Math.floor((v-10)/2);
