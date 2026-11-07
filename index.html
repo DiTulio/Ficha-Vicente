@@ -120,7 +120,7 @@ const ABIL=[
 ['Versatilidade Ampliada',12,'Feitiços ganham 1 variação de liberação; um deles ganha variação por nível de acesso.'],
 ['Manipulação Perfeita',16,'BT Feitiços têm o custo reduzido pela metade. Pré-requisito: Dominância em Feitiço.'],
 ['Sustentação Mestre',16,'Mantém 3 Feitiços sustentados e o custo de sustentar cai 1. Pré-requisito: Sustentação Avançada.']];
-const D={nome:'Vicente Orleans e Bragança',tecnica:'Soberania das Chamas',lvl:1,inc:{},hab:{},aptS:{},foco:'',base:{for:11,des:14,con:14,int:15,sab:10,pre:8},attrV:2,clan:'int',chave:'int',tec:'int',pvL:0,peL:0,defO:0,
+const D={treinoControleEtapa1:true,nome:'Vicente Orleans e Bragança',tecnica:'Soberania das Chamas',lvl:1,inc:{},hab:{},aptS:{},foco:'',base:{for:11,des:14,con:14,int:15,sab:10,pre:8},attrV:2,clan:'int',chave:'int',tec:'int',pvL:0,peL:0,defO:0,
  trV:1,tr:{'Feitiçaria':1,'Ocultismo':1,'Percepção':1,'Intuição':1,'Ofício 1':1,'Ofício 2':1,'Vontade':1},ma:{},fund:['Feitiço Preciso','Feitiço Potente'],
  tdesc:'',fixV:2,sup:0,fe:[],apt:'',lore:'',notas:''};
 const DESC_TEC=`O usuário dessa técnica é capaz de criar e moldar as chamas conforme a sua vontade, utilizando esse poder para criar habilidades poderosas e diferentes do padrão, desde "encantar" os punhos e objetos com fogo até criar formas com essas chamas.
@@ -280,7 +280,7 @@ function App(){
  const ptsLeft=2*Math.floor(L/4)-AT.reduce((a,[k])=>a+(+(s.inc||{})[k]||0),0);
  const fundMax=(L>=12?3:2)+(hasA('Expansão dos Fundamentos')?(L>=12?2:1):0);
  const cost=f=>{if(f.nv===0)return 0;let c=nonneg(f.custo??CUSTO[f.nv]);if(foco==='Economia')c=Math.max(f.nv===1?0:1,c-2);if(L>=20&&f.nv<=3)c=Math.ceil(c/2);return c};
- const pvMax=10+M.con+(L-1)*(5+M.con),peMax=6*L+M[s.tec]+half+(foco==='Economia'?bt:0)+(hasA('Energia Inacabável')?Math.floor(L/2):0);
+ const pvMax=10+M.con+(L-1)*(5+M.con),peMax=6*L+M[s.tec]+half+(s.treinoControleEtapa1?2:0)+(foco==='Economia'?bt:0)+(hasA('Energia Inacabável')?Math.floor(L/2):0);
  const pv=Math.max(0,pvMax-s.pvL),pe=Math.max(0,peMax-s.peL);
  const sk=(n,a)=>M[a]+half+(s.tr[n]?bt:0)+(s.ma[n]?Math.floor(bt/2):0);
  const def=10+M.des+half+(+s.defO||0)+(hasA('Movimentos Imprevisíveis')?Math.min(M[s.chave],L):0),ini=M.des+(hasA('Reação Rápida')?M[s.chave]:0),cd=10+half+M[s.chave]+bt+refB+reforco+(L>=20?5:0),cdA=10+half+M[s.tec]+bt+refB+reforco+(L>=20?5:0);
@@ -360,6 +360,8 @@ function App(){
   <div className="flex flex-wrap gap-4 mt-3 items-center mono text-[var(--dim)]">Bônus do clã: +2 em<select className="in !w-24" value=${s.clan} onChange=${e=>set('clan',e.target.value)}><option value="int">INT</option><option value="sab">SAB</option></select>
    Atributo da técnica<select className="in !w-24" value=${s.tec} onChange=${e=>set('tec',e.target.value)}>${AT.map(([k,a])=>h`<option key=${k} value=${k}>${a}</option>`)}</select>
    Atributo da CD de especialização<select className="in !w-24" value=${s.chave} onChange=${e=>set('chave',e.target.value)}><option value="int">INT</option><option value="sab">SAB</option></select></div>
+  ${sec('Treinamentos')}
+  <label className="flex items-center gap-3 mt-3"><input type="checkbox" aria-label="Controle de Energia — 1ª etapa" checked=${!!s.treinoControleEtapa1} onChange=${e=>set('treinoControleEtapa1',e.target.checked)}/><span><b>Controle de Energia — 1ª etapa</b><span className="block mono text-[var(--dim)] normal-case tracking-normal">+2 PE máximos · 1 foco de treinamento · Livro, p. 338</span></span></label>
   <div className="grid gap-x-10 gap-y-2 lg:grid-cols-3 mt-2">
    <div>${sec('Derivados')}${[['Pontos de Vida',pvMax],['Pontos de Energia',peMax],['Integridade da Alma',pvMax],['Defesa',def],['Atenção',aten],['Iniciativa',sg(ini)],['Deslocamento','9 m'],['Dado de Vida',L+'d8'],['Bônus de treinamento',sg(bt)],['CD de Especialização',cd],['CD Amaldiçoada',cdA]].map(([a,b])=>h`<div key=${a} className="row !cursor-default"><span>${a}</span><i></i><b>${b}</b></div>`)}</div>
    <div>${sec('Testes de resistência')}${RS.map(([n,a])=>trow('tr',n,a))}<p className="mono text-[var(--dim)] normal-case tracking-normal mt-2">Especialista em Técnica: treinado em Astúcia ou Vontade.</p></div>
