@@ -153,7 +153,10 @@ const ABIL=[
 const VICENTE_SKILLS={h2:'Nova Habilidade',h3:'Explosão Encadeada'};
 const VICENTE_APTITUDES={a2:'Afinidade Ampliada',a3:'Aura Reforçada'};
 const isVicente=name=>/^Vicente(?:\s|$)/i.test(String(name).trim());
-const D={treinoControleEtapa1:true,nome:'Vicente Orleans e Bragança',tecnica:'Soberania das Chamas',lvl:3,inc:{},hab:{...VICENTE_SKILLS},escolhasVicenteV:1,aptS:{...VICENTE_APTITUDES},foco:'',base:{for:11,des:14,con:14,int:15,sab:10,pre:8},attrV:2,clan:'int',chave:'int',tec:'int',pvL:0,peL:0,defO:0,
+const VICENTE_BASE={for:10,des:14,con:14,int:14,sab:10,pre:9};
+const VICENTE_BONUS={int:2,pre:1};
+const LEGACY_BASE={for:11,des:14,con:14,int:15,sab:10,pre:8};
+const D={treinoControleEtapa1:true,nome:'Vicente Orleans e Bragança',tecnica:'Soberania das Chamas',lvl:3,inc:{},hab:{...VICENTE_SKILLS},escolhasVicenteV:1,aptS:{...VICENTE_APTITUDES},foco:'',base:{...VICENTE_BASE},attrV:2,clan:'int',chave:'int',tec:'int',pvL:0,peL:0,defO:0,
  trV:1,tr:{'Feitiçaria':1,'Ocultismo':1,'Percepção':1,'Intuição':1,'Ofício 1':1,'Ofício 2':1,'Vontade':1},ma:{},fund:['Feitiço Preciso','Feitiço Potente'],
  tdesc:'',fixV:2,sup:0,fe:[],apt:'',lore:'',notas:''};
 const DESC_TEC=`O usuário dessa técnica é capaz de criar e moldar as chamas conforme a sua vontade, utilizando esse poder para criar habilidades poderosas e diferentes do padrão, desde "encantar" os punhos e objetos com fogo até criar formas com essas chamas.
@@ -216,6 +219,7 @@ const num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
 const nonneg=v=>Math.max(0,Math.trunc(num(v)));
 const mig=o=>{if(!obj(o))throw Error('Ficha inválida');const r={...D,...o};
  if(r.intercambio?.formato==='ficha-vicente')delete r.intercambio;
+ const fixedAttributes=isVicente(r.nome);
  for(const k of ['base','inc','tr','ma']){if(o[k]!==undefined&&!obj(o[k]))throw Error('Campo inválido: '+k);r[k]={...(D[k]||{}),...(o[k]||{})}}
  if(o.aptS!==undefined&&!obj(o.aptS))throw Error('Campo inválido: aptS');
  r.aptS={...o.aptS,...(isVicente(r.nome)?VICENTE_APTITUDES:{})};
@@ -230,7 +234,16 @@ const mig=o=>{if(!obj(o))throw Error('Ficha inválida');const r={...D,...o};
  if(o.fund!==undefined&&(!Array.isArray(o.fund)||o.fund.some(x=>typeof x!=='string')))throw Error('Fundamentos inválidos');
  r.fund=[...new Set(o.fund||D.fund)];r.lvl=Math.max(1,Math.min(20,nonneg(r.lvl)));
  for(const k of ['pvL','peL','pvT','sup','burn','burnTotal','exa'])r[k]=nonneg(r[k]);r.sup=Math.min(heatLimit(r.lvl),r.sup);
- for(const [k] of AT){r.base[k]=Math.max(1,Math.min(30,num(r.base[k],D.base[k])));r.inc[k]=num(r.inc[k])}
+ if(fixedAttributes){
+  r.base={...VICENTE_BASE};
+  r.inc={};
+  r.clan='int';
+ }else{
+  for(const [k] of AT){
+   r.base[k]=Math.max(1,Math.min(30,num(o.base?.[k]??LEGACY_BASE[k],LEGACY_BASE[k])));
+   r.inc[k]=num(r.inc[k]);
+  }
+ }
  for(const k of ['tec','chave','clan'])if(!AT.some(a=>a[0]===r[k]))r[k]=D[k];
  if(![4,6,8,10,12].includes(r.udie))r.udie=4;for(const k of ['nome','tecnica','notas','apt','dominio'])r[k]=String(r[k]??'');for(const k of ['hab','aptS'])for(const n of Object.keys(r[k]))r[k][n]=String(r[k][n]??'');
 if(!o.fixV){r.fe=(r.fe||[]).filter((f,i)=>!(i<2&&!f.desc&&!f.dano&&/^Feitiço \d/.test(f.n)));r.fixV=1}if((o.fixV||0)<2){r.fe=(r.fe||[]).filter(f=>!(/^Feitiço 3 \(Gojo\)$/.test(f.n)&&!f.desc&&!f.dano));r.fixV=2}r.attrV=2;if(!o.trV){r.tr={...r.tr,'Ofício 1':1,'Ofício 2':1};r.trV=1}return r};
@@ -387,7 +400,12 @@ function App(){
  };
  const SYN={local:pw?'salvo neste aparelho · envio pendente':'salvo neste aparelho · entre no modo editor para sincronizar',offline:'sem conexão com o servidor · cópia local preservada',salvando:'salvando na nuvem…',salvo:'sincronizado com a nuvem',erro:'envio pendente · nova tentativa automática',senha:'senha incorreta · entre no modo editor',conflito:'há versões diferentes · escolha abaixo',armazenamento:'falha ao salvar neste aparelho · exporte um backup'};
  const set=(k,v)=>setS(p=>({...p,[k]:v}));
- const A={};AT.forEach(([k])=>A[k]=(+s.base[k]||0)+(k===s.clan?2:(k==='int'||k==='sab')?1:0)+(+(s.inc||{})[k]||0));
+ const fixedAttributes=isVicente(s.nome);
+ const A={};
+ for(const [k] of AT){
+  const bonus=fixedAttributes?(VICENTE_BONUS[k]||0):(k===s.clan?2:(k==='int'||k==='sab')?1:0);
+  A[k]=s.base[k]+bonus+(s.inc[k]||0);
+ }
  const M={};AT.forEach(([k])=>M[k]=mod(A[k]));
  const L=s.lvl,hb=s.hab||{},ap=s.aptS||{};
  const hasA=(name,level=L)=>Object.entries(hb).some(([key,value])=>/^h\d+$/.test(key)&&+key.slice(1)<=level&&value===name);
@@ -403,7 +421,7 @@ function App(){
  };
  const {bt,half,refino,foco,pvMax,peMax,def,cd,cdA}=statsAt(L);
  const olhar=hasA('Olhar Preciso')?2+Math.floor(L/4):0;
- const ptsLeft=2*Math.floor(L/4)-AT.reduce((a,[k])=>a+(+(s.inc||{})[k]||0),0);
+ const ptsLeft=fixedAttributes?0:2*Math.floor(L/4)-AT.reduce((a,[k])=>a+(+(s.inc||{})[k]||0),0);
  const fundMax=(L>=12?3:2)+(hasA('Expansão dos Fundamentos')?(L>=12?2:1):0);
  const cost=f=>{if(f.nv===0)return 0;let c=nonneg(f.custo??CUSTO[f.nv]);if(foco==='Economia')c=Math.max(f.nv===1?0:1,c-2);if(L>=20&&f.nv<=3)c=Math.ceil(c/2);return c};
  const pv=Math.max(0,pvMax-s.pvL),pe=Math.max(0,peMax-s.peL);
@@ -543,10 +561,15 @@ function App(){
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-[var(--ln)]">
    ${stat('Defesa',def,'10 + DES + nível/2')}${stat('Atenção',aten,'10 + Percepção')}${stat('Iniciativa',sg(ini),'d20 + DES',()=>roll('Iniciativa',ini))}
    ${stat('Acerto técnica',sg(atkT),'igual à Feitiçaria',()=>roll('Ataque amaldiçoado',atkT,true))}${stat('CD',cdA,'10 + nível/2 + mod + BT')}${stat('Deslocamento','9 m','caminhada')}</div>
-  ${sec('Atributos',ptsLeft>0?'▲ '+ptsLeft+' ponto(s) para distribuir com + e −':ptsLeft<0?'+'+(-ptsLeft)+' além do nível':'clã Gojo já somado · base fixa da Compra de Pontos')}
-  <div className="grid grid-cols-3 lg:grid-cols-6 gap-px bg-[var(--ln)]">${AT.map(([k,ab,nm])=>h`<div key=${k} className="tile hov cursor-pointer" onClick=${()=>roll(nm,M[k])}><div className="mono text-[var(--dim)]">${ab}${k===s.tec?' · técnica':''}</div><div className=${'big text-4xl my-1 '+(k===s.tec?'text-[var(--gd)]':'')}>${sg(M[k])}</div>
+  ${sec('Atributos',fixedAttributes?'Valores fixos de Vicente':ptsLeft>0?'▲ '+ptsLeft+' ponto(s) para distribuir com + e −':ptsLeft<0?'+'+(-ptsLeft)+' além do nível':'clã Gojo já somado · base fixa da Compra de Pontos')}
+  <div className="grid grid-cols-3 lg:grid-cols-6 gap-px bg-[var(--ln)]">${AT.map(([k,ab,nm])=>fixedAttributes?h`<button key=${k} type="button" className="tile hov text-left" aria-label=${'Rolar '+nm+' (modificador '+sg(M[k])+')'} onClick=${()=>roll(nm,M[k])}>
+    <span className="block mono text-[var(--dim)]">${ab}${k===s.tec?' · técnica':''}</span>
+    <b className=${'block big text-4xl my-1 '+(k===s.tec?'text-[var(--gd)]':'')}>${A[k]}</b>
+    <span className="block mono text-[var(--dim)]">mod. ${sg(M[k])}</span>
+    ${VICENTE_BONUS[k]?h`<span className="block text-sm text-[var(--dim)]">${s.base[k]} base + ${VICENTE_BONUS[k]}${k==='int'?' de Gojo':''}</span>`:null}
+   </button>`:h`<div key=${k} className="tile hov cursor-pointer" onClick=${()=>roll(nm,M[k])}><div className="mono text-[var(--dim)]">${ab}${k===s.tec?' · técnica':''}</div><div className=${'big text-4xl my-1 '+(k===s.tec?'text-[var(--gd)]':'')}>${sg(M[k])}</div>
     <div className="flex flex-wrap items-center gap-2 mono text-[var(--dim)]" onClick=${e=>e.stopPropagation()}>${A[k]}<button className="bx !px-2 !py-0" aria-label=${'Diminuir '+nm} onClick=${()=>incA(k,-1)}>−</button><button className=${'bx !px-2 !py-0 '+(ptsLeft>0?'on':'')} aria-label=${'Aumentar '+nm} onClick=${()=>incA(k,1)}>+</button><span title="Valor base da Compra de Pontos (fixo)">base ${s.base[k]} 🔒</span></div></div>`)}</div>
-  <div className="flex flex-wrap gap-4 mt-3 items-center mono text-[var(--dim)]">Bônus do clã: +2 em<select className="in !w-24" value=${s.clan} onChange=${e=>set('clan',e.target.value)}><option value="int">INT</option><option value="sab">SAB</option></select>
+  <div className="flex flex-wrap gap-4 mt-3 items-center mono text-[var(--dim)]">${fixedAttributes?null:h`<label>Bônus do clã: +2 em<select className="in !w-24" value=${s.clan} onChange=${e=>set('clan',e.target.value)}><option value="int">INT</option><option value="sab">SAB</option></select></label>`}
    Atributo da técnica<select className="in !w-24" value=${s.tec} onChange=${e=>set('tec',e.target.value)}>${AT.map(([k,a])=>h`<option key=${k} value=${k}>${a}</option>`)}</select>
    Atributo da CD de especialização<select className="in !w-24" value=${s.chave} onChange=${e=>set('chave',e.target.value)}><option value="int">INT</option><option value="sab">SAB</option></select></div>
   ${sec('Treinamentos')}
@@ -627,7 +650,7 @@ function App(){
    <div className="flex gap-2 mt-3 flex-wrap">${f.btns.map(([label,a])=>h`<button key=${a} className="bx on" disabled=${a==='armRet'&&(!s.armActive||!s.pvT)} onClick=${()=>act(a)}>${label}</button>`)}</div>${f.n.startsWith('Armadura')?h`<label className="flex items-center gap-2 mt-3 mono text-[var(--dim)] normal-case tracking-normal"><input type="checkbox" checked=${!!s.tempFree} onChange=${e=>set('tempFree',e.target.checked)}/> Ignorar o limite do livro (PV temporários só até metade dos PV máximos)</label>`:''}</div>`};
  const pgTec=h`<div>${head(3,'Técnica',s.tecnica||'Soberania das Chamas')}
   <div className="grid md:grid-cols-2 gap-10"><div><div className="mono text-[var(--dim)]">Nome da técnica</div>${inp('tecnica','Nome','big !text-3xl')}<div className="mono text-[var(--dim)] mt-5">Descrição</div><p className="m-0 mt-2 text-[#c9bdb2] whitespace-pre-line">${DESC_TEC}</p></div>
-   <div>${sec('Herança do clã Gojo')}<div className="space-y-3 text-[#c9bdb2]"><p><b className="text-[var(--tx)]">Bônus de atributo.</b> +2 em INT ou SAB e +1 no outro (já aplicado).</p><p><b className="text-[var(--tx)]">Treinamentos de clã.</b> Treinado em 2 perícias entre Feitiçaria, Percepção e Intuição (ou especialista em uma).</p><p><b className="text-[var(--tx)]">Potencial Lendário.</b> +1 PE em todo nível par e +1 Feitiço no nível 1 e nos níveis 5, 10, 15 e 20.</p></div></div></div>
+   <div>${sec('Herança do clã Gojo')}<div className="space-y-3 text-[#c9bdb2]"><p><b className="text-[var(--tx)]">Bônus de atributo.</b> ${fixedAttributes?'Vicente tem +2 de Gojo em INT (14 → 16). Sua PRE recebe +1 (9 → 10).':'+2 em INT ou SAB e +1 no outro (já aplicado).'}</p><p><b className="text-[var(--tx)]">Treinamentos de clã.</b> Treinado em 2 perícias entre Feitiçaria, Percepção e Intuição (ou especialista em uma).</p><p><b className="text-[var(--tx)]">Potencial Lendário.</b> +1 PE em todo nível par e +1 Feitiço no nível 1 e nos níveis 5, 10, 15 e 20.</p></div></div></div>
   ${sec('Domínio dos Fundamentos',s.fund.length+' de '+fundMax+' escolhidas')}<div className="grid md:grid-cols-2 gap-x-10">${FUND.map(([n,d])=>{const on=s.fund.includes(n);return h`<div key=${n} className="border-t border-[var(--ln)] py-3 flex gap-3"><button className=${'bx h-fit '+(on?'on':'')} onClick=${()=>set('fund',on?s.fund.filter(x=>x!==n):[...s.fund,n])}>${on?'ativo':'off'}</button><div><b>${n}</b><p className="m-0 text-[#c9bdb2]">${d}</p></div></div>`})}</div>
   ${sec('Feitiços',`${s.fe.length+FIXED.length} de ${nFe} · acesso até nível ${acesso}`)}<p className="text-[#c9bdb2]">O dano dos seus Feitiços soma o bônus do atributo da técnica (${AT.find(a=>a[0]===s.tec)[2]}): <b>${sg(M[s.tec])}</b> nos níveis 0 a 2 e <b>${sg(2*M[s.tec])}</b> no nível 3. O valor acompanha o atributo e atualiza sozinho quando ele subir.</p>
   <div className="grid md:grid-cols-2 gap-px bg-[var(--ln)]">${FIXED.map(fixedCard)}${s.fe.map((f,i)=>{const up=(k,v)=>setS(p=>({...p,fe:p.fe.map((x,j)=>j===i?{...x,[k]:v,...(k==='nv'?{custo:undefined}:{})}:x)}));const c=cost(f);return h`<div key=${i} className="tile"><div className="flex gap-3"><input className="in font-bold text-lg" value=${f.n} aria-label="Nome do Feitiço" onChange=${e=>up('n',e.target.value)}/><button className="bx" aria-label="Remover" onClick=${()=>set('fe',s.fe.filter((_,j)=>j!==i))}>✕</button></div>
