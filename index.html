@@ -150,7 +150,10 @@ const ABIL=[
 ['Versatilidade Ampliada',12,'Feitiços ganham 1 variação de liberação; um deles ganha variação por nível de acesso.'],
 ['Manipulação Perfeita',16,'BT Feitiços têm o custo reduzido pela metade. Pré-requisito: Dominância em Feitiço.'],
 ['Sustentação Mestre',16,'Mantém 3 Feitiços sustentados e o custo de sustentar cai 1. Pré-requisito: Sustentação Avançada.']];
-const D={treinoControleEtapa1:true,nome:'Vicente Orleans e Bragança',tecnica:'Soberania das Chamas',lvl:1,inc:{},hab:{},aptS:{},foco:'',base:{for:11,des:14,con:14,int:15,sab:10,pre:8},attrV:2,clan:'int',chave:'int',tec:'int',pvL:0,peL:0,defO:0,
+const VICENTE_SKILLS={h2:'Nova Habilidade',h3:'Explosão Encadeada'};
+const VICENTE_APTITUDES={a2:'Afinidade Ampliada',a3:'Aura Reforçada'};
+const isVicente=name=>/^Vicente(?:\s|$)/i.test(String(name).trim());
+const D={treinoControleEtapa1:true,nome:'Vicente Orleans e Bragança',tecnica:'Soberania das Chamas',lvl:3,inc:{},hab:{...VICENTE_SKILLS},escolhasVicenteV:1,aptS:{...VICENTE_APTITUDES},foco:'',base:{for:11,des:14,con:14,int:15,sab:10,pre:8},attrV:2,clan:'int',chave:'int',tec:'int',pvL:0,peL:0,defO:0,
  trV:1,tr:{'Feitiçaria':1,'Ocultismo':1,'Percepção':1,'Intuição':1,'Ofício 1':1,'Ofício 2':1,'Vontade':1},ma:{},fund:['Feitiço Preciso','Feitiço Potente'],
  tdesc:'',fixV:2,sup:0,fe:[],apt:'',lore:'',notas:''};
 const DESC_TEC=`O usuário dessa técnica é capaz de criar e moldar as chamas conforme a sua vontade, utilizando esse poder para criar habilidades poderosas e diferentes do padrão, desde "encantar" os punhos e objetos com fogo até criar formas com essas chamas.
@@ -213,7 +216,15 @@ const num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
 const nonneg=v=>Math.max(0,Math.trunc(num(v)));
 const mig=o=>{if(!obj(o))throw Error('Ficha inválida');const r={...D,...o};
  if(r.intercambio?.formato==='ficha-vicente')delete r.intercambio;
- for(const k of ['base','inc','hab','aptS','tr','ma']){if(o[k]!==undefined&&!obj(o[k]))throw Error('Campo inválido: '+k);r[k]={...(D[k]||{}),...(o[k]||{})}}
+ for(const k of ['base','inc','tr','ma']){if(o[k]!==undefined&&!obj(o[k]))throw Error('Campo inválido: '+k);r[k]={...(D[k]||{}),...(o[k]||{})}}
+ if(o.aptS!==undefined&&!obj(o.aptS))throw Error('Campo inválido: aptS');
+ r.aptS={...o.aptS,...(isVicente(r.nome)?VICENTE_APTITUDES:{})};
+ if(o.hab!==undefined&&!obj(o.hab))throw Error('Campo inválido: hab');
+ r.hab={...o.hab};
+ if(!o.escolhasVicenteV&&isVicente(r.nome)){
+  Object.assign(r.hab,VICENTE_SKILLS);
+  r.escolhasVicenteV=1;
+ }
  if(o.fe!==undefined&&!Array.isArray(o.fe))throw Error('Feitiços inválidos');
  r.fe=(o.fe||[]).map(f=>{if(!obj(f))throw Error('Feitiço inválido');return {...f,n:String(f.n||'Novo Feitiço'),nv:Math.min(5,nonneg(f.nv)),dano:String(f.dano||''),desc:String(f.desc||''),...(f.custo==null?{}:{custo:nonneg(f.custo)})}});
  if(o.fund!==undefined&&(!Array.isArray(o.fund)||o.fund.some(x=>typeof x!=='string')))throw Error('Fundamentos inválidos');
@@ -452,6 +463,8 @@ function App(){
  const card=(t,tp,d,btns)=>h`<div key=${t} className="border-t border-[var(--ln)] py-4"><div className="flex justify-between gap-3"><h3 className="text-xl font-bold m-0">${t}</h3><span className="mono text-[var(--dim)]">${tp}</span></div><p className="text-[#c9bdb2] my-2">${d}</p><div className="flex gap-2 flex-wrap">${(btns||[]).map(([l,f])=>h`<button key=${l} className="bx" onClick=${f}>${l}</button>`)}</div></div>`;
 
  const slotsH=Array.from({length:Math.max(0,L-1)},(_,i)=>i+2);
+ const aptNames=slotsH.map(n=>ap['a'+n]).filter(Boolean);
+ const aptList=aptNames.length?h`<p className="text-[#c9bdb2] mt-4"><b>Aptidões Amaldiçoadas:</b> ${aptNames.join(', ')}</p>`:null;
  const incA=(k,d)=>{const cur=+(s.inc||{})[k]||0;if(A[k]+d<1)return;set('inc',{...(s.inc||{}),[k]:cur+d})};
  const changeLevel=n=>{n=Math.max(1,Math.min(20,n));setS(p=>{let fe=p.fe;const need=nF(n)-FIXED.length;while(fe.length<need)fe=[...fe,{n:'Feitiço '+(fe.length+FIXED.length+1),nv:0,dano:'',desc:''}];return {...p,lvl:n,sup:Math.min(nonneg(p.sup),heatLimit(n)),fe}});if(n>L){setGained(n);setPg(5)}};
  const gainsOf=n=>{
@@ -478,7 +491,7 @@ function App(){
   ${Array.from({length:L},(_,i)=>i+1).flatMap(n=>FEAT[n]||[]).map(([a,d])=>card(a,'Especialização',d))}
   ${slotsH.map(n=>{const nm=hb['h'+n];const ab=ABIL.find(x=>x[0]===nm);return card(nm?nm+(nm==='Talento'&&hb['n'+n]?': '+hb['n'+n]:''):'Habilidade do nível '+n+' (a escolher)','Nível '+n,ab?ab[2]:(nm?'Talento: descreva o efeito na aba Progressão.':'Escolha na aba Progressão.'))})}</div>
   ${L>=10?h`<label className="block mt-4"><span className="mono text-[var(--dim)]">Foco Amaldiçoado</span><select className="in !w-56" value=${s.foco||''} onChange=${e=>set('foco',e.target.value)}><option value="">— escolher —</option><option value="Destruição">Destruição (+1 dano por dado, +BT no dano)</option><option value="Economia">Economia (custos -2, PE +BT)</option><option value="Refino">Refino (+1 aptidão ou feitiço à escolha, +metade do BT em CD e ataque)</option></select></label>`:''}
-  ${ap&&Object.values(ap).some(Boolean)?h`<p className="text-[#c9bdb2] mt-4"><b>Aptidões Amaldiçoadas:</b> ${Array.from({length:L-1},(_,i)=>ap['a'+(i+2)]).filter(Boolean).join(', ')}</p>`:''}</div>`;
+  ${aptList}</div>`;
  const progressionTable=(label,columns,rows)=>h`<div className="progress-table-wrap"><table className="progress-table" aria-label=${label}>
   <thead><tr>${columns.map(name=>h`<th key=${name} scope="col">${name}</th>`)}</tr></thead>
   <tbody>${rows.map(({cells,current})=>h`<tr key=${cells[0]} aria-current=${current?'true':undefined}>
@@ -494,9 +507,9 @@ function App(){
  </section>`;
  const classSection=h`<section aria-label="Progressão do Especialista em Técnica">
   ${sec('Especialista em Técnica','Livro de Regras v2.5 · pp. 78–81')}
-  <p className="mb-3">Do 2º ao 20º nível, Vicente pode trocar a habilidade de especialista daquele nível por um talento. A aptidão amaldiçoada é uma escolha adicional. Conjuração Aprimorada também concede um novo feitiço a cada subida de nível.</p>
-  ${progressionTable('Tabela de nível do Especialista em Técnica',['Nível','Escolhas do nível','Ganhos adicionais'],LEVELS.map(n=>({
-   cells:[n,n===1?'—':'1 habilidade ou talento + 1 aptidão',classMilestones(n).join(' · ')||'—'],current:n===L
+  <p className="mb-3">Do 2º ao 20º nível, Vicente pode trocar a habilidade de especialista daquele nível por um talento. A nota logo abaixo da tabela na página 81 concede também <b>1 aptidão amaldiçoada a cada subida de nível</b>, inclusive do 2º para o 3º. Conjuração Aprimorada também concede um novo feitiço a cada subida de nível.</p>
+  ${progressionTable('Tabela de nível do Especialista em Técnica',['Nível','Escolha de especialista','Aptidão amaldiçoada','Ganhos adicionais'],LEVELS.map(n=>({
+   cells:[n,n===1?'—':'1 habilidade ou 1 talento',n===1?'—':'1 aptidão',classMilestones(n).join(' · ')||'—'],current:n===L
   })))}
  </section>`;
  const characterProjection=h`<details className="mt-5"><summary className="cursor-pointer font-bold">Projeção dos atributos de combate de Vicente</summary>
@@ -519,7 +532,11 @@ function App(){
    return h`<div key=${n} className="border-t border-[var(--ln)] py-3"><label><span className="mono text-[var(--dim)]">Nível ${n}</span>
     <select className="in" value=${cur} onChange=${e=>set('hab',{...hb,['h'+n]:e.target.value})}><option value="">— escolher —</option><option value="Talento">Talento (descrever)</option>${ABIL.filter(x=>x[1]<=n&&(REP.includes(x[0])||!taken.includes(x[0]))).map(x=>h`<option key=${x[0]} value=${x[0]}>${x[0]}</option>`)}</select></label>
     ${ab?h`<p className="m-0 mt-2 text-[#c9bdb2]">${ab[2]}</p>`:''}${cur==='Talento'?h`<input className="in mt-2" placeholder="Nome e efeito do talento" value=${hb['n'+n]||''} onChange=${e=>set('hab',{...hb,['n'+n]:e.target.value})}/>`:''}</div>`})}</div>
-  ${sec('Aptidões Amaldiçoadas','1 por nível')}<div className="grid md:grid-cols-2 gap-x-10">${Array.from({length:L-1},(_,i)=>i+2).map(n=>h`<label key=${n} className="block py-2"><span className="mono text-[var(--dim)]">Nível ${n}</span><input className="in" placeholder="Nome da aptidão (capítulo 8 do livro)" value=${ap['a'+n]||''} onChange=${e=>set('aptS',{...ap,['a'+n]:e.target.value})}/></label>`)}</div></div>`;
+  ${sec('Aptidões Amaldiçoadas','1 por nível a partir do 2º')}<div className="grid md:grid-cols-2 gap-x-10">${slotsH.map(n=>{
+   const key='a'+n;
+   if(isVicente(s.nome)&&Object.hasOwn(VICENTE_APTITUDES,key))return h`<div key=${key} className="py-2"><span className="mono text-[var(--dim)]">Nível ${n} · fixa</span><div className="font-bold">${ap[key]}</div></div>`;
+   return h`<label key=${key} className="block py-2"><span className="mono text-[var(--dim)]">Nível ${n}</span><input className="in" placeholder="Nome da aptidão (capítulo 8 do livro)" value=${ap[key]||''} onChange=${e=>set('aptS',{...ap,[key]:e.target.value})}/></label>`;
+  })}</div></div>`;
  const pgFicha=h`<div>${head(1,'Ficha',`Nível ${L} · Herdado (Gojo) · Especialista em Técnica`)}
   <p className="text-xl max-w-2xl">${s.nome} é do clã Gojo e vive de técnica: <span className="flame font-bold">${s.tecnica||'Soberania das Chamas'}</span>. Atributo da técnica: ${AT.find(a=>a[0]===s.tec)[2]}.</p>
   ${sec('Em combate','Clique para rolar')}
@@ -623,7 +640,7 @@ function App(){
   <div className="flex items-center gap-3 mt-4"><span className="mono text-[var(--dim)]">Pontos de Sobrecarga</span><button className="bx" onClick=${()=>set('sup',Math.max(0,sup-1))}>−</button><b className=${'big text-2xl '+(sup>=limit?'text-red-400':'text-[var(--gd)]')}>${sup}/${limit}</b><button className="bx" onClick=${()=>set('sup',Math.min(limit,sup+1))}>+</button>${sup>=limit?h`<span className="mono text-red-400">SOBRECARGA CRÍTICA · dano próprio pelo nível do feitiço</span>`:''}</div>
   <button className="bx mt-4" onClick=${()=>{setS(p=>({...p,sup:0,enn:false}));push('Resfriamento',0,'1 rodada sem usar a técnica · Ennetsu encerrado')}}>1 rodada sem técnica</button><span className="mono ml-3">Exaustão: ${nonneg(s.exa)}</span><button className="bx" onClick=${()=>set('exa',Math.max(0,nonneg(s.exa)-1))}>−</button><button className="bx" onClick=${()=>set('exa',nonneg(s.exa)+1)}>+</button>
   <button className="bx mt-4" onClick=${()=>set('fe',[...s.fe,{n:'Novo Feitiço',nv:0,dano:'',desc:''}])}>+ Feitiço</button>
-  ${sec('Aptidões amaldiçoadas','1 por nível')}${area('apt','Anote suas aptidões amaldiçoadas',4)}</div>`;
+  ${sec('Aptidões amaldiçoadas','1 por nível a partir do 2º')}${aptNames.length?h`<p className="my-2">${aptNames.join(' · ')}</p>`:null}<label className="block"><span className="mono text-[var(--dim)]">Anotações de aptidão</span>${area('apt','Anotações de aptidão',4)}</label></div>`;
 
  const pgLore=h`<div>${head(4,'Lore','O que aconteceu, em ordem')}<h2 className="big text-4xl m-0 mb-6">${s.nome}</h2>${LORE.map((x,i)=>h`<p key=${i} className="text-[#c9bdb2] text-lg leading-relaxed max-w-3xl my-5">${x}</p>`)}<p className="big text-2xl max-w-3xl mt-10 pl-4 flame" style=${{borderLeft:'3px solid var(--em)'}}>${LORE_Q}</p></div>`;
  const pgDom=h`<div>${head(5,'Domínio','Expansão de domínio')}${area('dominio','Descreva seu domínio, custo, alcance e efeitos',10)}</div>`;
@@ -656,7 +673,7 @@ function App(){
    combate:{'Defesa':def,'Iniciativa':ini,'Atenção':aten,'Acerto de técnica':atkT,'CD de técnica':cdA,'CD de especialização':cd,'Bônus de treinamento':bt,'Deslocamento (m)':9},
    pericias:skills(SK),resistencias:skills(RS),
    habilidades:[...Array.from({length:L},(_,i)=>FEAT[i+1]||[]).flat().map(([n,d])=>n+' — '+d),...chosen],
-   aptidoes:[...slotsH.map(n=>ap['a'+n]).filter(Boolean),...(s.apt?[s.apt]:[])],
+   aptidoes:[...new Set([...aptNames,...(s.apt.trim()?[s.apt.trim()]:[])])],
    treinamentos:s.treinoControleEtapa1?['Controle de Energia · 1ª etapa (+2 PE máximos)']:[],
    feiticos:spellList(),dominio:s.dominio||'',historia:s.lore||[...LORE,LORE_Q].join('\n\n'),notas:s.notas||''};
  };
